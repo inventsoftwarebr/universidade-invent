@@ -9,9 +9,17 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
  * Chamado pelo middleware.ts raiz. Não pular esse passo — sem ele,
  * sessões expiram silenciosamente e o usuário é deslogado sem aviso.
  * Ver CLAUDE.md §2.
+ *
+ * Também injeta o header `x-pathname` para Server Components que precisem
+ * saber a URL atual (highlight de nav, etc.) sem virar Client Component.
  */
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+
+  let response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +33,9 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          response = NextResponse.next({ request });
+          response = NextResponse.next({
+            request: { headers: requestHeaders },
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );
