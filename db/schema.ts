@@ -303,24 +303,33 @@ export const lessons = pgTable(
 // Video assets
 // =============================================================================
 
-export const videoAssets = pgTable("video_assets", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  provider: videoProviderEnum("provider").notNull().default("bunny"),
-  providerAssetId: text("provider_asset_id").notNull(),
-  playbackId: text("playback_id"),
-  durationSeconds: integer("duration_seconds"),
-  aspectRatio: varchar("aspect_ratio", { length: 16 }),
-  status: videoStatusEnum("status").notNull().default("uploading"),
-  thumbnailUrl: text("thumbnail_url"),
-  captionsUrl: text("captions_url"),
-  transcriptText: text("transcript_text"),
-  transcriptSegments: jsonb("transcript_segments"), // [{ start, end, text }]
-  uploadedBy: uuid("uploaded_by").references(() => profiles.id, {
-    onDelete: "set null",
+export const videoAssets = pgTable(
+  "video_assets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    provider: videoProviderEnum("provider").notNull().default("bunny"),
+    providerAssetId: text("provider_asset_id").notNull(),
+    playbackId: text("playback_id"),
+    durationSeconds: integer("duration_seconds"),
+    aspectRatio: varchar("aspect_ratio", { length: 16 }),
+    status: videoStatusEnum("status").notNull().default("uploading"),
+    thumbnailUrl: text("thumbnail_url"),
+    captionsUrl: text("captions_url"),
+    transcriptText: text("transcript_text"),
+    transcriptSegments: jsonb("transcript_segments"), // [{ start, end, text }]
+    uploadedBy: uuid("uploaded_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    providerAssetUnique: unique("video_assets_provider_asset_unique").on(
+      t.provider,
+      t.providerAssetId,
+    ),
   }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+);
 
 // =============================================================================
 // Enrollment & progress

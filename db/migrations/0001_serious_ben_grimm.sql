@@ -1,0 +1,1 @@
+ALTER TABLE "video_assets" ADD CONSTRAINT "video_assets_provider_asset_unique" UNIQUE("provider","provider_asset_id");
