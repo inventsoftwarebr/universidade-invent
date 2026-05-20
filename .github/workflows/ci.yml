@@ -22,7 +22,8 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      # TODO: re-add --frozen-lockfile assim que pnpm-lock.yaml for commitado.
+      - run: pnpm install
 
       - name: Typecheck
         run: pnpm typecheck
