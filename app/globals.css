@@ -3,66 +3,100 @@
 @tailwind utilities;
 
 /*
- * Design tokens — placeholders neutros até a entrega do design system
- * do Claude Design pela Invent Software. Substituir cores e radius por
- * tokens da identidade visual oficial. Mantenha a estrutura HSL:
- * tailwind.config.ts referencia estas variáveis via hsl(var(--...)).
+ * Design tokens — Universidade Invent
+ *
+ * Identidade visual extraída do "Manual de Marca Invent 2021"
+ * (docs/brand/manual-de-marca-invent.pdf).
+ *
+ * Paleta oficial:
+ *   Principal (vermelhos brand): #F94343 / #E41216 / #B6221A / #A81A16
+ *   Complementar (laranja/amarelo): #FBBD3B / #FBB33B
+ *   Neutros (P/B): #E2E3E8 (claro) / #535260 (escuro)
+ *
+ * Tipografia oficial:
+ *   Logotipo: Le Havre (Adobe Fonts, uso restrito ao logo)
+ *   Conteúdo institucional: Montserrat (Google Fonts) → UI da Universidade
  */
 @layer base {
   :root {
+    /* ============================================================ */
+    /* Surfaces                                                     */
+    /* ============================================================ */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background-subtle: 225 11% 97%;
+    --foreground: 240 12% 14%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 225 11% 95%;
+    --muted-foreground: 238 7% 35%; /* #535260 — P/B escuro do manual */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 240 12% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 240 12% 14%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 225 11% 90%; /* #E2E3E8 — P/B claro do manual */
+    --input: 225 11% 90%;
 
-    /* Placeholder — substituir pelo azul Invent quando design system chegar */
-    --primary: 222 47% 11%;
-    --primary-foreground: 210 40% 98%;
+    /* ============================================================ */
+    /* Brand — vermelho Invent                                      */
+    /* ============================================================ */
+    --primary: 359 84% 48%; /* #E41216 — vermelho brand */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 4 75% 41%; /* #B6221A */
+    --primary-soft: 0 94% 62%; /* #F94343 */
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    /* ============================================================ */
+    /* Accent — laranja/amarelo complementar                        */
+    /* ============================================================ */
+    --accent: 38 96% 61%; /* #FBB33B */
+    --accent-foreground: 240 12% 14%;
+    --accent-soft: 42 96% 61%; /* #FBBD3B */
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --secondary: 225 11% 95%;
+    --secondary-foreground: 240 12% 14%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 86% 48%; /* mesma família do brand, mais saturado */
+    --destructive-foreground: 0 0% 100%;
 
-    --ring: 222 47% 11%;
+    --ring: 359 84% 48%;
 
-    --radius: 0.625rem;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --ring: 213 27% 84%;
+    --background: 240 12% 6%; /* quase-preto do hero do manual */
+    --background-subtle: 240 12% 10%;
+    --foreground: 0 0% 98%;
+
+    --muted: 240 8% 14%;
+    --muted-foreground: 240 5% 65%;
+
+    --popover: 240 12% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    --card: 240 12% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --border: 240 8% 18%;
+    --input: 240 8% 18%;
+
+    --primary: 0 94% 62%; /* vermelho mais saturado em fundo escuro */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 359 84% 48%;
+    --primary-soft: 4 75% 41%;
+
+    --accent: 42 96% 61%;
+    --accent-foreground: 240 12% 6%;
+    --accent-soft: 38 96% 61%;
+
+    --secondary: 240 8% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --destructive: 0 94% 62%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 0 94% 62%;
   }
 }
 
@@ -76,6 +110,38 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "ss01" 1, "cv11" 1;
+  }
+}
+
+@layer utilities {
+  /*
+   * Gradiente oficial do logo "v": vermelho → laranja → amarelo.
+   * Usar com moderação — CTAs hero, badges premium, hover states.
+   */
+  .bg-invent-gradient {
+    background-image: linear-gradient(135deg, #b6221a 0%, #e41216 25%, #fbb33b 75%, #fbbd3b 100%);
+  }
+  .text-invent-gradient {
+    background-image: linear-gradient(135deg, #b6221a 0%, #e41216 25%, #fbb33b 75%, #fbbd3b 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  /*
+   * Faixa diagonal vermelha — motivo visual recorrente nas peças
+   * institucionais do manual. Usar como acento decorativo em
+   * hero/empty states, não como container de conteúdo.
+   */
+  .accent-stripe-left::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    background: linear-gradient(180deg, #e41216 0%, #b6221a 100%);
+    clip-path: polygon(0 0, 100% 0, 60% 100%, 0 100%);
   }
 }
