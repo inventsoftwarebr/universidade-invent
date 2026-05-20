@@ -1,0 +1,341 @@
+/* ============================================================================
+   Invent Software Design System — Tokens + Semantic Styles
+   ----------------------------------------------------------------------------
+   Source of truth for colors + type. Tagged "🩹 placeholder" or "🩹 substitute"
+   where the value is inferred (not pulled from the official brand manual).
+   ============================================================================ */
+
+/* Font substitutions (Google Fonts — replace with real .ttf/.woff2 from manual).
+   🩹 Substituted: Barlow (display) + Inter (body). */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* --------------------------------------------------------------------------
+     COLORS — PRIMITIVES
+     The literal swatch palette. Use semantic tokens below in actual UI code.
+
+     Source: Invent brand manual logo files (uploads/*.png — analyzed visually).
+     The master mark uses a red→yellow vertical GRADIENT on the "V" of "invent".
+     Each "Plus" product has its OWN color identity for its 3D-ribbon initial:
+       • BankPlus → gold/yellow B
+       • ContractPlus → red C
+       • TaxPlus → deep purple/indigo T
+     -------------------------------------------------------------------------- */
+
+  /* Primary red — matches the bottom of the V-mark gradient + ContractPlus C */
+  --invent-red-50:  #FFEDEE;
+  --invent-red-100: #FFD0D2;
+  --invent-red-200: #FBA0A4;
+  --invent-red-300: #F36F75;
+  --invent-red-400: #E94049;
+  --invent-red-500: #D81E2D;   /* hero red (approx Pantone 186 — verify) */
+  --invent-red-600: #B81825;
+  --invent-red-700: #8E121C;
+  --invent-red-800: #680D14;
+  --invent-red-900: #420609;
+
+  /* Secondary yellow/gold — matches the top of the V-mark gradient + BankPlus B */
+  --invent-gold-50:  #FFF8E0;
+  --invent-gold-100: #FFECB3;
+  --invent-gold-200: #FFD980;
+  --invent-gold-300: #FFC246;
+  --invent-gold-400: #FFB000;
+  --invent-gold-500: #F7A600;   /* hero gold/amber */
+  --invent-gold-600: #D08800;
+  --invent-gold-700: #A06600;
+  --invent-gold-800: #704700;
+  --invent-gold-900: #422900;
+
+  /* Tertiary orange — used in supporting marketing graphics */
+  --invent-orange-500: #F39200;
+
+  /* TaxPlus purple/indigo */
+  --invent-purple-100: #DCD3F2;
+  --invent-purple-300: #8A6FD1;
+  --invent-purple-500: #4527A0;
+  --invent-purple-700: #2E1A6B;
+  --invent-purple-900: #1A0F3D;
+
+  /* Neutrals — cool-leaning gray to match the "invent" wordmark color */
+  --invent-black:   #0A0A0B;
+  --invent-ink:     #1F1F23;
+  --invent-gray-900: #2A2D33;
+  --invent-gray-800: #353841;
+  --invent-gray-700: #4B5566;   /* ≈ wordmark gray */
+  --invent-gray-600: #6B7280;
+  --invent-gray-500: #8B92A0;
+  --invent-gray-400: #B0B6C0;
+  --invent-gray-300: #CDD2DA;
+  --invent-gray-200: #E2E5EA;
+  --invent-gray-100: #EEF0F3;
+  --invent-gray-50:  #F7F8FA;
+  --invent-white:    #FFFFFF;
+
+  /* Semantic status colors (not part of brand palette — utility) */
+  --status-success: #1B8C5A;
+  --status-warn:    var(--invent-orange-500);
+  --status-error:   var(--invent-red-500);
+  --status-info:    #2563EB;
+
+  /* --------------------------------------------------------------------------
+     COLORS — SEMANTIC TOKENS
+     Use these in actual components. Light theme defaults; dark overrides below.
+     -------------------------------------------------------------------------- */
+
+  --bg-canvas:        var(--invent-gray-50);
+  --bg-surface:       var(--invent-white);
+  --bg-surface-alt:   var(--invent-gray-100);
+  --bg-inverse:       var(--invent-black);
+
+  --fg-primary:       var(--invent-ink);
+  --fg-secondary:     var(--invent-gray-700);
+  --fg-tertiary:      var(--invent-gray-500);
+  --fg-disabled:      var(--invent-gray-400);
+  --fg-on-inverse:    var(--invent-white);
+  --fg-on-brand:      var(--invent-white);
+
+  --border-subtle:    rgba(10, 10, 11, 0.06);
+  --border-default:   rgba(10, 10, 11, 0.12);
+  --border-strong:    rgba(10, 10, 11, 0.24);
+
+  --brand-primary:        var(--invent-gold-500);
+  --brand-primary-hover:  var(--invent-gold-600);
+  --brand-primary-press:  var(--invent-gold-700);
+  --brand-accent:         var(--invent-red-500);
+  --brand-accent-hover:   var(--invent-red-600);
+
+  /* The signature "V-mark" gradient — red bottom → yellow top.
+     Use as: background-image: var(--brand-v-gradient);
+     Apply to a clipped letterform or geometric shape for the 3D-ribbon look. */
+  --brand-v-gradient: linear-gradient(180deg, var(--invent-gold-400) 0%, var(--invent-gold-500) 38%, var(--invent-red-500) 78%, var(--invent-red-600) 100%);
+
+  /* Product accent colors — each "Plus" product has its own */
+  --product-tax:      var(--invent-purple-500);  /* TaxPlus T */
+  --product-bank:     var(--invent-gold-500);    /* BankPlus B */
+  --product-contract: var(--invent-red-500);     /* ContractPlus C */
+  --product-payroll:  var(--invent-gray-700);    /* Payroll (no published mark — verify) */
+
+  --link:                 var(--invent-red-600);
+  --link-hover:           var(--invent-red-700);
+
+  --focus-ring:           color-mix(in oklab, var(--invent-red-500) 70%, transparent);
+
+  /* --------------------------------------------------------------------------
+     TYPOGRAPHY
+     -------------------------------------------------------------------------- */
+
+  --font-display: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;  /* 🩹 sub */
+  --font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;   /* 🩹 sub */
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Type scale — 1.25 ratio, anchored at 16px body */
+  --text-2xs:  11px;
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-md:   18px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  30px;
+  --text-3xl:  38px;
+  --text-4xl:  48px;
+  --text-5xl:  60px;
+  --text-6xl:  76px;
+  --text-7xl:  96px;
+
+  --leading-tight:  1.1;
+  --leading-snug:   1.25;
+  --leading-normal: 1.5;
+  --leading-loose:  1.7;
+
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:    0.04em;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+  --weight-black:   800;
+
+  /* --------------------------------------------------------------------------
+     SPACING / RADII / SHADOWS / MOTION
+     -------------------------------------------------------------------------- */
+
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --radius-sharp:  0;
+  --radius-xs:     2px;
+  --radius-sm:     4px;
+  --radius-md:     6px;
+  --radius-lg:     8px;
+  --radius-xl:     12px;
+  --radius-2xl:    16px;
+  --radius-pill:   999px;
+
+  --shadow-xs: 0 1px 2px rgba(10, 10, 11, 0.06);
+  --shadow-sm: 0 1px 3px rgba(10, 10, 11, 0.08), 0 1px 2px rgba(10, 10, 11, 0.04);
+  --shadow-md: 0 4px 12px rgba(10, 10, 11, 0.08), 0 2px 4px rgba(10, 10, 11, 0.04);
+  --shadow-lg: 0 12px 32px rgba(10, 10, 11, 0.12), 0 4px 8px rgba(10, 10, 11, 0.06);
+  --shadow-xl: 0 24px 64px rgba(10, 10, 11, 0.18), 0 8px 16px rgba(10, 10, 11, 0.08);
+
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:       cubic-bezier(0.7, 0, 0.84, 0);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  /* Layout */
+  --container-max: 1200px;
+  --container-wide: 1400px;
+  --grid-gutter: 24px;
+}
+
+/* Dark / inverse theme — usually applied to <section class="invent-dark"> */
+.invent-dark {
+  --bg-canvas:      var(--invent-black);
+  --bg-surface:     var(--invent-gray-900);
+  --bg-surface-alt: var(--invent-gray-800);
+  --bg-inverse:     var(--invent-white);
+  --fg-primary:     var(--invent-white);
+  --fg-secondary:   var(--invent-gray-300);
+  --fg-tertiary:    var(--invent-gray-400);
+  --fg-disabled:    var(--invent-gray-600);
+  --fg-on-inverse:  var(--invent-ink);
+  --border-subtle:  rgba(255,255,255,0.08);
+  --border-default: rgba(255,255,255,0.14);
+  --border-strong:  rgba(255,255,255,0.28);
+}
+
+/* ============================================================================
+   SEMANTIC ELEMENT STYLES
+   Drop-in defaults so a plain HTML page renders on-brand without classes.
+   Scope under .invent-typography if you don't want global reset.
+   ============================================================================ */
+
+.invent-typography {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--fg-primary);
+  background: var(--bg-canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.invent-typography h1,
+.invent-h1 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-5xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-primary);
+  margin: 0 0 var(--space-6);
+}
+
+.invent-typography h2,
+.invent-h2 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-3xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-snug);
+  margin: 0 0 var(--space-4);
+}
+
+.invent-typography h3,
+.invent-h3 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  margin: 0 0 var(--space-3);
+}
+
+.invent-typography h4,
+.invent-h4 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  margin: 0 0 var(--space-2);
+}
+
+.invent-typography p,
+.invent-p {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  margin: 0 0 var(--space-4);
+  text-wrap: pretty;
+}
+
+.invent-typography .lede,
+.invent-lede {
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--fg-secondary);
+  font-weight: var(--weight-regular);
+}
+
+.invent-typography .eyebrow,
+.invent-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--brand-primary);
+}
+
+.invent-typography small,
+.invent-small {
+  font-size: var(--text-sm);
+  color: var(--fg-secondary);
+}
+
+.invent-typography code,
+.invent-code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--bg-surface-alt);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+}
+
+.invent-typography a,
+.invent-link {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.invent-typography a:hover,
+.invent-link:hover {
+  color: var(--link-hover);
+}
+
+/* Display tier — for marketing hero copy */
+.invent-display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: clamp(var(--text-5xl), 7vw, var(--text-7xl));
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}

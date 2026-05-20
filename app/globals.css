@@ -3,100 +3,178 @@
 @tailwind utilities;
 
 /*
- * Design tokens — Universidade Invent
+ * Design tokens — Invent Software Design System (entrega oficial via Claude Design).
  *
- * Identidade visual extraída do "Manual de Marca Invent 2021"
- * (docs/brand/manual-de-marca-invent.pdf).
+ * Estes tokens espelham `colors_and_type.css` da entrega. Mapeamento HSL
+ * existe para shadcn/Tailwind, mas a fonte canônica das cores é a paleta
+ * `--invent-*` exposta a seguir.
  *
- * Paleta oficial:
- *   Principal (vermelhos brand): #F94343 / #E41216 / #B6221A / #A81A16
- *   Complementar (laranja/amarelo): #FBBD3B / #FBB33B
- *   Neutros (P/B): #E2E3E8 (claro) / #535260 (escuro)
+ * Marca:
+ *   PRIMARY = Dourado/Âmbar #F7A600 (cor dominante)
+ *   ACCENT  = Vermelho #D81E2D (cor de acento, mais escasso)
+ *   Cinza wordmark cool = #4B5566
+ *   Roxo TaxPlus = #4527A0, Dourado BankPlus = #F7A600, Vermelho ContractPlus = #D81E2D
+ *   Gradiente V-mark: vertical, dourado (topo) → vermelho (base)
  *
- * Tipografia oficial:
- *   Logotipo: Le Havre (Adobe Fonts, uso restrito ao logo)
- *   Conteúdo institucional: Montserrat (Google Fonts) → UI da Universidade
+ * Tipografia:
+ *   Display = Barlow (substituição do Le Havre original)
+ *   Body    = Inter
  */
 @layer base {
   :root {
-    /* ============================================================ */
-    /* Surfaces                                                     */
-    /* ============================================================ */
-    --background: 0 0% 100%;
-    --background-subtle: 225 11% 97%;
-    --foreground: 240 12% 14%;
+    /* ========== Invent palette — primitivas ========== */
+    --invent-red-50: #ffedee;
+    --invent-red-100: #ffd0d2;
+    --invent-red-200: #fba0a4;
+    --invent-red-300: #f36f75;
+    --invent-red-400: #e94049;
+    --invent-red-500: #d81e2d;
+    --invent-red-600: #b81825;
+    --invent-red-700: #8e121c;
+    --invent-red-800: #680d14;
+    --invent-red-900: #420609;
 
-    --muted: 225 11% 95%;
-    --muted-foreground: 238 7% 35%; /* #535260 — P/B escuro do manual */
+    --invent-gold-50: #fff8e0;
+    --invent-gold-100: #ffecb3;
+    --invent-gold-200: #ffd980;
+    --invent-gold-300: #ffc246;
+    --invent-gold-400: #ffb000;
+    --invent-gold-500: #f7a600;
+    --invent-gold-600: #d08800;
+    --invent-gold-700: #a06600;
+    --invent-gold-800: #704700;
+    --invent-gold-900: #422900;
+
+    --invent-orange-500: #f39200;
+
+    --invent-purple-100: #dcd3f2;
+    --invent-purple-300: #8a6fd1;
+    --invent-purple-500: #4527a0;
+    --invent-purple-700: #2e1a6b;
+    --invent-purple-900: #1a0f3d;
+
+    --invent-black: #0a0a0b;
+    --invent-ink: #1f1f23;
+    --invent-gray-900: #2a2d33;
+    --invent-gray-800: #353841;
+    --invent-gray-700: #4b5566;
+    --invent-gray-600: #6b7280;
+    --invent-gray-500: #8b92a0;
+    --invent-gray-400: #b0b6c0;
+    --invent-gray-300: #cdd2da;
+    --invent-gray-200: #e2e5ea;
+    --invent-gray-100: #eef0f3;
+    --invent-gray-50: #f7f8fa;
+    --invent-white: #ffffff;
+
+    --status-success: #1b8c5a;
+    --status-warn: var(--invent-orange-500);
+    --status-error: var(--invent-red-500);
+    --status-info: #2563eb;
+
+    /* ========== Semantic surfaces ========== */
+    --bg-canvas: var(--invent-gray-50);
+    --bg-surface: var(--invent-white);
+    --bg-surface-alt: var(--invent-gray-100);
+    --bg-inverse: var(--invent-black);
+
+    --fg-primary: var(--invent-ink);
+    --fg-secondary: var(--invent-gray-700);
+    --fg-tertiary: var(--invent-gray-500);
+    --fg-disabled: var(--invent-gray-400);
+
+    --border-subtle: rgba(10, 10, 11, 0.06);
+    --border-default: rgba(10, 10, 11, 0.12);
+    --border-strong: rgba(10, 10, 11, 0.24);
+
+    --brand-primary: var(--invent-gold-500);
+    --brand-primary-hover: var(--invent-gold-600);
+    --brand-primary-press: var(--invent-gold-700);
+    --brand-accent: var(--invent-red-500);
+    --brand-accent-hover: var(--invent-red-600);
+
+    --brand-v-gradient: linear-gradient(
+      180deg,
+      var(--invent-gold-400) 0%,
+      var(--invent-gold-500) 38%,
+      var(--invent-red-500) 78%,
+      var(--invent-red-600) 100%
+    );
+
+    --product-tax: var(--invent-purple-500);
+    --product-bank: var(--invent-gold-500);
+    --product-contract: var(--invent-red-500);
+    --product-payroll: var(--invent-gray-700);
+
+    --link: var(--invent-red-600);
+    --link-hover: var(--invent-red-700);
+
+    --focus-ring: color-mix(in oklab, var(--invent-gold-500) 50%, transparent);
+
+    /* ========== Tailwind/shadcn aliases (HSL para classes utilitárias) ========== */
+    --background: 220 22% 97%; /* gray-50 */
+    --background-subtle: 220 16% 95%; /* gray-100 */
+    --foreground: 240 9% 13%; /* ink */
+
+    --muted: 220 16% 95%;
+    --muted-foreground: 222 16% 35%; /* gray-700 (wordmark) */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 12% 14%;
+    --popover-foreground: 240 9% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 12% 14%;
+    --card-foreground: 240 9% 13%;
 
-    --border: 225 11% 90%; /* #E2E3E8 — P/B claro do manual */
-    --input: 225 11% 90%;
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
 
-    /* ============================================================ */
-    /* Brand — vermelho Invent                                      */
-    /* ============================================================ */
-    --primary: 359 84% 48%; /* #E41216 — vermelho brand */
+    /* PRIMARY = gold */
+    --primary: 40 100% 49%; /* #F7A600 */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 4 75% 41%; /* #B6221A */
-    --primary-soft: 0 94% 62%; /* #F94343 */
+    --primary-hover: 39 100% 41%; /* gold-600 */
+    --primary-soft: 38 100% 64%; /* gold-300 */
 
-    /* ============================================================ */
-    /* Accent — laranja/amarelo complementar                        */
-    /* ============================================================ */
-    --accent: 38 96% 61%; /* #FBB33B */
-    --accent-foreground: 240 12% 14%;
-    --accent-soft: 42 96% 61%; /* #FBBD3B */
+    /* ACCENT = red */
+    --accent: 355 75% 48%; /* #D81E2D */
+    --accent-foreground: 0 0% 100%;
+    --accent-soft: 0 100% 95%; /* red-50 */
 
-    --secondary: 225 11% 95%;
-    --secondary-foreground: 240 12% 14%;
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 240 9% 13%;
 
-    --destructive: 4 86% 48%; /* mesma família do brand, mais saturado */
+    --destructive: 355 75% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 359 84% 48%;
+    --ring: 40 100% 49%;
 
     --radius: 0.5rem;
   }
 
-  .dark {
-    --background: 240 12% 6%; /* quase-preto do hero do manual */
-    --background-subtle: 240 12% 10%;
-    --foreground: 0 0% 98%;
+  .dark,
+  .invent-dark {
+    --bg-canvas: var(--invent-black);
+    --bg-surface: var(--invent-gray-900);
+    --bg-surface-alt: var(--invent-gray-800);
+    --bg-inverse: var(--invent-white);
+    --fg-primary: var(--invent-white);
+    --fg-secondary: var(--invent-gray-300);
+    --fg-tertiary: var(--invent-gray-400);
+    --fg-disabled: var(--invent-gray-600);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-default: rgba(255, 255, 255, 0.14);
+    --border-strong: rgba(255, 255, 255, 0.28);
 
-    --muted: 240 8% 14%;
-    --muted-foreground: 240 5% 65%;
-
-    --popover: 240 12% 8%;
-    --popover-foreground: 0 0% 98%;
-
-    --card: 240 12% 8%;
-    --card-foreground: 0 0% 98%;
-
-    --border: 240 8% 18%;
-    --input: 240 8% 18%;
-
-    --primary: 0 94% 62%; /* vermelho mais saturado em fundo escuro */
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 359 84% 48%;
-    --primary-soft: 4 75% 41%;
-
-    --accent: 42 96% 61%;
-    --accent-foreground: 240 12% 6%;
-    --accent-soft: 38 96% 61%;
-
-    --secondary: 240 8% 14%;
-    --secondary-foreground: 0 0% 98%;
-
-    --destructive: 0 94% 62%;
-    --destructive-foreground: 0 0% 100%;
-
-    --ring: 0 94% 62%;
+    --background: 240 5% 4%;
+    --background-subtle: 222 10% 11%;
+    --foreground: 0 0% 100%;
+    --muted: 222 10% 14%;
+    --muted-foreground: 220 13% 75%;
+    --popover: 222 10% 8%;
+    --popover-foreground: 0 0% 100%;
+    --card: 222 10% 8%;
+    --card-foreground: 0 0% 100%;
+    --border: 222 10% 18%;
+    --input: 222 10% 18%;
   }
 }
 
@@ -115,33 +193,29 @@
 }
 
 @layer utilities {
-  /*
-   * Gradiente oficial do logo "v": vermelho → laranja → amarelo.
-   * Usar com moderação — CTAs hero, badges premium, hover states.
-   */
-  .bg-invent-gradient {
-    background-image: linear-gradient(135deg, #b6221a 0%, #e41216 25%, #fbb33b 75%, #fbbd3b 100%);
+  /* Gradiente assinatura (V-mark). Uso restrito: headlines hero, badges premium, barras de progresso. */
+  .bg-v-gradient {
+    background-image: var(--brand-v-gradient);
   }
-  .text-invent-gradient {
-    background-image: linear-gradient(135deg, #b6221a 0%, #e41216 25%, #fbb33b 75%, #fbbd3b 100%);
+  .text-v-gradient {
+    background-image: var(--brand-v-gradient);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
   }
 
-  /*
-   * Faixa diagonal vermelha — motivo visual recorrente nas peças
-   * institucionais do manual. Usar como acento decorativo em
-   * hero/empty states, não como container de conteúdo.
-   */
-  .accent-stripe-left::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 12px;
-    background: linear-gradient(180deg, #e41216 0%, #b6221a 100%);
-    clip-path: polygon(0 0, 100% 0, 60% 100%, 0 100%);
+  /* Surface premium (dark, marketing hero) */
+  .surface-premium {
+    background: radial-gradient(
+        ellipse at 30% 0%,
+        rgba(247, 166, 0, 0.18) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse at 80% 100%,
+        rgba(216, 30, 45, 0.16) 0%,
+        transparent 55%
+      ),
+      var(--invent-black);
   }
 }

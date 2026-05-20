@@ -18,24 +18,20 @@ export default async function EntrarPage({
     <>
       <SiteHeader />
       <main className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[10%] bg-gradient-to-b from-primary to-primary-hover lg:block"
-          style={{ clipPath: "polygon(0 0, 100% 0, 50% 100%, 0 100%)" }}
-        />
-        <div className="container grid gap-12 py-16 lg:grid-cols-2 lg:gap-20">
-          <div className="hidden flex-col justify-center lg:flex lg:pl-12">
-            <InventVMark className="h-16" />
-            <h1 className="mt-8 font-display text-4xl font-extrabold leading-tight tracking-tight">
-              Continue de onde parou.
-            </h1>
-            <p className="mt-4 max-w-md text-lg text-muted-foreground">
-              Sua trilha, seu progresso, seus certificados. A Universidade
-              Invent guarda tudo isso entre cada sessão de estudo.
-            </p>
-          </div>
+        {/* Painel esquerdo dark "premium" com V-mark + gradiente discreto */}
+        <div className="surface-premium hidden flex-col justify-center self-stretch px-12 py-16 text-white lg:flex lg:w-[44%]">
+          <InventVMark className="h-16" />
+          <h1 className="mt-8 font-display text-4xl font-extrabold leading-tight tracking-tight">
+            Continue de onde parou.
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-white/75">
+            Sua trilha, seu progresso, seus certificados. A Universidade Invent
+            guarda tudo isso entre cada sessão de estudo.
+          </p>
+        </div>
 
-          <div className="mx-auto w-full max-w-md">
+        <div className="flex flex-1 items-center justify-center px-6 py-12">
+          <div className="w-full max-w-md">
             <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
               <h2 className="font-display text-2xl font-bold tracking-tight">
                 Entrar
@@ -47,7 +43,7 @@ export default async function EntrarPage({
               {params.signedUp ? (
                 <div
                   role="status"
-                  className="mt-4 rounded-md border border-accent/30 bg-accent-soft/10 px-3 py-2 text-sm text-foreground"
+                  className="mt-4 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground"
                 >
                   Conta criada. Confira seu email para confirmar o cadastro.
                 </div>
@@ -56,7 +52,7 @@ export default async function EntrarPage({
               {params.error ? (
                 <div
                   role="alert"
-                  className="mt-4 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                  className="mt-4 rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-accent"
                 >
                   Não foi possível entrar com o provedor. Tente novamente.
                 </div>
@@ -77,7 +73,7 @@ export default async function EntrarPage({
 
               <p className="mt-6 text-center text-xs text-muted-foreground">
                 Ainda não tem conta?{" "}
-                <Link href="/cadastrar" className="font-semibold text-primary">
+                <Link href="/cadastrar" className="font-semibold text-accent">
                   Cadastrar
                 </Link>
               </p>

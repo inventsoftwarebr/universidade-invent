@@ -13,30 +13,25 @@ export default function CadastrarPage() {
     <>
       <SiteHeader />
       <main className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute right-0 top-0 hidden h-full w-[10%] bg-gradient-to-b from-primary to-primary-hover lg:block"
-          style={{ clipPath: "polygon(50% 0, 100% 0, 100% 100%, 0 100%)" }}
-        />
-        <div className="container grid gap-12 py-12 lg:grid-cols-2 lg:gap-20">
-          <div className="hidden flex-col justify-center lg:flex">
-            <InventVMark className="h-16" />
-            <h1 className="mt-8 font-display text-4xl font-extrabold leading-tight tracking-tight">
-              Crie sua conta gratuita.
-            </h1>
-            <p className="mt-4 max-w-md text-lg text-muted-foreground">
-              Acesso imediato aos cursos abertos. Cliente Invent? Após criar
-              conta, vincule sua empresa para ver os cursos contratados.
-            </p>
+        <div className="surface-premium hidden flex-col justify-center self-stretch px-12 py-16 text-white lg:flex lg:w-[44%]">
+          <InventVMark className="h-16" />
+          <h1 className="mt-8 font-display text-4xl font-extrabold leading-tight tracking-tight">
+            Crie sua conta gratuita.
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-white/75">
+            Acesso imediato aos cursos abertos. Cliente Invent? Vincule sua
+            empresa após criar conta e libere os cursos contratados.
+          </p>
 
-            <ul className="mt-10 space-y-3 text-sm text-muted-foreground">
-              <Bullet>Trilhas guiadas por persona e produto SAP</Bullet>
-              <Bullet>Certificados verificáveis com QR code</Bullet>
-              <Bullet>AI tutor que cita timestamps das aulas</Bullet>
-            </ul>
-          </div>
+          <ul className="mt-10 space-y-3 text-sm text-white/75">
+            <Bullet>Trilhas guiadas por persona e produto SAP</Bullet>
+            <Bullet>Certificados verificáveis com QR code</Bullet>
+            <Bullet>AI tutor que cita timestamps das aulas</Bullet>
+          </ul>
+        </div>
 
-          <div className="mx-auto w-full max-w-md">
+        <div className="flex flex-1 items-center justify-center px-6 py-12">
+          <div className="w-full max-w-md">
             <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
               <h2 className="font-display text-2xl font-bold tracking-tight">
                 Criar conta
@@ -64,7 +59,7 @@ export default function CadastrarPage() {
 
               <p className="mt-6 text-center text-xs text-muted-foreground">
                 Já tem conta?{" "}
-                <Link href="/entrar" className="font-semibold text-primary">
+                <Link href="/entrar" className="font-semibold text-accent">
                   Entrar
                 </Link>
               </p>
@@ -81,7 +76,7 @@ function Bullet({ children }: { children: React.ReactNode }) {
     <li className="flex items-center gap-3">
       <span
         aria-hidden
-        className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary"
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-invent-gold-300"
       >
         ✓
       </span>

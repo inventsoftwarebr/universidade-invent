@@ -3,15 +3,13 @@ import { InventLogo } from "@/components/brand/InventLogo";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" aria-label="Universidade Invent">
-          <div className="flex items-center gap-3">
-            <InventLogo className="h-7" />
-            <span className="hidden text-sm font-medium text-muted-foreground md:inline">
-              Universidade
-            </span>
-          </div>
+        <Link href="/" aria-label="Universidade Invent" className="flex items-center gap-3">
+          <InventLogo className="h-7" />
+          <span className="hidden text-xs font-semibold uppercase tracking-wider text-primary md:inline">
+            Universidade
+          </span>
         </Link>
         <nav className="flex items-center gap-1 text-sm font-medium md:gap-4">
           <Link
@@ -28,9 +26,15 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/entrar"
-            className="rounded-md bg-primary px-4 py-2 text-primary-foreground transition hover:bg-primary-hover"
+            className="rounded-md border border-border bg-background px-3 py-1.5 text-foreground transition hover:bg-muted"
           >
             Entrar
+          </Link>
+          <Link
+            href="/cadastrar"
+            className="rounded-md bg-primary px-4 py-1.5 font-semibold text-primary-foreground transition hover:bg-primary-hover"
+          >
+            Criar conta
           </Link>
         </nav>
       </div>

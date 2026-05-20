@@ -1,139 +1,123 @@
 import Link from "next/link";
-import { InventLogo, InventVMark } from "@/components/brand/InventLogo";
+import Image from "next/image";
+import { SiteHeader, SiteFooter } from "@/components/marketing/SiteShell";
+import { InventVMark } from "@/components/brand/InventLogo";
+
+const PRODUCTS = [
+  {
+    slug: "taxplus",
+    name: "TaxPlus",
+    color: "bg-product-tax",
+    text: "Apuração ICMS, SPED, NF-e, NFS-e e contingência.",
+    count: 12,
+  },
+  {
+    slug: "bankplus",
+    name: "BankPlus",
+    color: "bg-product-bank",
+    text: "Conciliação bancária, CNAB, pagamentos e fluxo de caixa.",
+    count: 7,
+  },
+  {
+    slug: "contractplus",
+    name: "ContractPlus",
+    color: "bg-product-contract",
+    text: "Contratos, faturamento recorrente e indexação.",
+    count: 5,
+  },
+  {
+    slug: "payroll",
+    name: "Invent Payroll",
+    color: "bg-product-payroll",
+    text: "Folha de pagamento na nuvem integrada ao SAP B1.",
+    count: 4,
+  },
+];
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/" aria-label="Universidade Invent">
-            <div className="flex items-center gap-3">
-              <InventLogo className="h-7" />
-              <span className="hidden text-sm font-medium text-muted-foreground md:inline">
-                Universidade
-              </span>
-            </div>
-          </Link>
-          <nav className="flex items-center gap-1 text-sm font-medium md:gap-4">
-            <Link
-              href="/cursos"
-              className="hidden rounded-md px-3 py-2 text-muted-foreground hover:text-foreground md:inline-block"
-            >
-              Cursos
-            </Link>
-            <Link
-              href="/sobre"
-              className="hidden rounded-md px-3 py-2 text-muted-foreground hover:text-foreground md:inline-block"
-            >
-              Sobre
-            </Link>
-            <Link
-              href="/entrar"
-              className="rounded-md bg-primary px-4 py-2 text-primary-foreground transition hover:bg-primary-hover"
-            >
-              Entrar
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <main className="min-h-screen bg-background">
+      <SiteHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        {/* Faixa diagonal vermelha à esquerda — motivo do manual */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-0 top-0 hidden h-full w-[14%] bg-gradient-to-b from-primary to-primary-hover lg:block"
-          style={{ clipPath: "polygon(0 0, 100% 0, 60% 100%, 0 100%)" }}
-        />
-        {/* V invent gigante decorativo à direita */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-12 top-12 hidden opacity-[0.06] lg:block"
-        >
-          <InventVMark className="h-[480px] w-auto" />
-        </div>
-
-        <div className="container relative grid gap-12 py-20 md:py-28 lg:grid-cols-2 lg:gap-16">
-          <div className="space-y-8 lg:pl-8">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              <InventVMark className="h-3.5 w-auto" />
-              Plataforma oficial Invent Software
+      {/* Hero — surface premium escura, padrão das peças oficiais */}
+      <section className="surface-premium relative overflow-hidden">
+        <div className="container relative grid gap-16 py-20 md:py-28 lg:grid-cols-[1.1fr_1fr]">
+          <div className="relative z-10 text-white">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-invent-gold-300">
+              Parceira SAP® · ISV premiada
             </span>
-
-            <h1 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight-display md:text-6xl lg:text-7xl">
-              Domine os addons{" "}
-              <span className="text-invent-gradient">SAP da Invent</span>.
+            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.02] tracking-tight md:text-6xl lg:text-7xl">
+              Aprenda a operar os addons{" "}
+              <span className="text-v-gradient">SAP da Invent</span>.
             </h1>
-
-            <p className="max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-              Cursos oficiais sobre nossas soluções fiscais, financeiras e de
-              contratos para SAP Business One e SAP S/4HANA Cloud ERP. Para
-              clientes, parceiros e profissionais que querem ir mais fundo.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/75 md:text-xl">
+              Universidade oficial da Invent Software. Cursos sobre TaxPlus,
+              BankPlus, ContractPlus e Invent Payroll para clientes, parceiros
+              e profissionais SAP que querem ir mais fundo.
             </p>
-
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
                 href="/cursos"
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-primary-foreground transition hover:bg-primary-hover"
               >
                 Explorar cursos
                 <span aria-hidden>→</span>
               </Link>
               <Link
-                href="/entrar"
-                className="rounded-md border border-border bg-background px-6 py-3 font-semibold text-foreground transition hover:bg-muted"
+                href="/cadastrar"
+                className="rounded-md border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
               >
-                Já tenho conta
+                Criar conta gratuita
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-3 pt-4 text-sm text-muted-foreground">
+            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-white/60">
               <span className="flex items-center gap-2">
-                <CheckIcon /> SAP Business One
+                <CheckGold /> SAP Business One
               </span>
               <span className="flex items-center gap-2">
-                <CheckIcon /> SAP S/4HANA Cloud ERP
+                <CheckGold /> SAP S/4HANA Cloud ERP
               </span>
               <span className="flex items-center gap-2">
-                <CheckIcon /> ISV 3x certificada
+                <CheckGold /> ISV 3x premiada na LATAM
               </span>
             </div>
           </div>
 
-          {/* Card decorativo de "destaque" mostrando a estética dos cursos */}
+          {/* Card de "curso em destaque" premium */}
           <div className="relative hidden items-center justify-center lg:flex">
             <div className="relative w-full max-w-md">
-              <div className="absolute -inset-4 rounded-2xl bg-invent-gradient opacity-20 blur-2xl" />
-              <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
-                <div className="relative aspect-video bg-gradient-to-br from-[#1F1F26] to-[#0E0E13]">
-                  <InventVMark className="absolute right-6 top-6 h-12 opacity-90" />
+              <div className="absolute -inset-6 rounded-3xl bg-v-gradient opacity-25 blur-3xl" />
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-invent-gray-900 shadow-xl">
+                <div className="relative aspect-video bg-gradient-to-br from-product-tax to-invent-black">
+                  <InventVMark className="absolute right-6 top-6 h-12" />
                   <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground">
                       ▶
                     </div>
                     <div className="flex-1">
-                      <div className="text-xs text-white/60">Curso em destaque</div>
-                      <div className="font-semibold text-white">
-                        Apuração fiscal com TaxPlus
+                      <div className="text-xs font-semibold uppercase tracking-wider text-invent-gold-300">
+                        Em destaque · TaxPlus
+                      </div>
+                      <div className="font-display font-semibold text-white">
+                        Fundamentos do TaxPlus
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-3 p-5">
+                <div className="space-y-3 bg-invent-black p-5 text-white/80">
                   <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-muted-foreground">
-                      Gestão Fiscal · Intermediário
-                    </span>
-                    <span className="rounded-full bg-accent/20 px-2 py-0.5 text-accent-foreground">
-                      3h 40min
+                    <span>Iniciante · 2h 22min</span>
+                    <span className="rounded-full bg-primary/20 px-2 py-0.5 text-invent-gold-300">
+                      Certificado SAP
                     </span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full w-[40%] rounded-full bg-invent-gradient" />
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full w-[64%] rounded-full bg-v-gradient" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Você está no módulo 2 de 5 · próxima aula: <em>SPED Fiscal</em>
+                  <p className="text-sm text-white/60">
+                    Você está no módulo 2 de 4 · próxima aula:{" "}
+                    <em className="not-italic text-white">Parametrização tributária</em>
                   </p>
                 </div>
               </div>
@@ -142,51 +126,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categorias */}
+      {/* Trilhas por produto */}
       <section className="border-y border-border bg-background-subtle">
         <div className="container py-16 md:py-20">
           <div className="mb-10 flex items-end justify-between gap-6">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                Trilhas de conhecimento
+                Trilhas por produto
               </p>
               <h2 className="mt-2 font-display text-3xl font-bold tracking-tight md:text-4xl">
-                Aprenda pelo seu domínio.
+                Cada addon Invent tem sua trilha.
               </h2>
             </div>
             <Link
               href="/cursos"
-              className="hidden text-sm font-semibold text-primary hover:text-primary-hover md:inline-flex"
+              className="hidden text-sm font-semibold text-accent hover:text-invent-red-700 md:inline-flex"
             >
               Ver todas as trilhas →
             </Link>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <CategoryCard
-              title="SAP"
-              subtitle="Fundamentos do B1 e S/4HANA Cloud"
-              count="12 cursos"
-              accent="primary"
-            />
-            <CategoryCard
-              title="Gestão Fiscal"
-              subtitle="TaxPlus, SPED, NF-e, NFS-e"
-              count="9 cursos"
-              accent="accent"
-            />
-            <CategoryCard
-              title="Financeiro & Bancário"
-              subtitle="BankPlus, conciliação, CNAB"
-              count="7 cursos"
-              accent="primary-soft"
-            />
-            <CategoryCard
-              title="Contratos"
-              subtitle="ContractPlus, faturamento recorrente"
-              count="5 cursos"
-              accent="accent-soft"
-            />
+            {PRODUCTS.map((p) => (
+              <Link
+                key={p.slug}
+                href="/cursos"
+                className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className={`absolute left-0 top-0 h-full w-1 ${p.color}`} />
+                <div className="pl-2">
+                  <h3 className="font-display text-xl font-bold tracking-tight">
+                    {p.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{p.text}</p>
+                  <div className="mt-6 flex items-center justify-between text-xs font-semibold">
+                    <span className="text-muted-foreground">{p.count} cursos</span>
+                    <span className="text-accent opacity-0 transition group-hover:opacity-100">
+                      Acessar →
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -213,7 +194,7 @@ export default function HomePage() {
             description="Tire 100% do retorno dos addons. Onboarding, melhores práticas e atualizações."
           />
           <PersonaCard
-            label="Parceiros"
+            label="Parceiros SAP"
             title="Implementar e revender com confiança"
             description="Capacitação para integradores e revendedores SAP que entregam soluções Invent."
             highlight
@@ -226,100 +207,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-background-subtle">
-        <div className="container flex flex-col items-start justify-between gap-6 py-10 md:flex-row md:items-center">
-          <div className="space-y-2">
-            <InventLogo className="h-6" />
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Invent Software · Universidade Invent
+      {/* Faixa "ISV premiada" — referencia o products-hero do design system */}
+      <section className="container pb-20">
+        <div className="surface-premium relative overflow-hidden rounded-2xl px-8 py-14 md:px-14">
+          <div className="relative z-10 max-w-2xl text-white">
+            <p className="text-xs font-semibold uppercase tracking-wider text-invent-gold-300">
+              Otimizando a performance de pessoas e empresas
+            </p>
+            <h2 className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+              Três anos consecutivos como melhor ISV da América Latina no ecossistema SAP Business One.
+            </h2>
+            <p className="mt-4 max-w-xl text-white/70">
+              A Universidade Invent é onde esse conhecimento — fiscal, financeiro e de contratos brasileiros — vira capacitação prática.
             </p>
           </div>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <Link href="/sobre" className="hover:text-foreground">
-              Sobre
-            </Link>
-            <Link href="/cursos" className="hover:text-foreground">
-              Cursos
-            </Link>
-            <Link href="/privacidade" className="hover:text-foreground">
-              Privacidade
-            </Link>
-            <Link href="/termos" className="hover:text-foreground">
-              Termos
-            </Link>
-            <a
-              href="https://inventsoftware.com.br"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-foreground"
-            >
-              inventsoftware.com.br ↗
-            </a>
-          </nav>
+          {/* products-hero apenas decorativo */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-12 bottom-0 hidden h-full w-[55%] opacity-40 lg:block"
+          >
+            <Image
+              src="/brand/products-hero.png"
+              alt=""
+              width={900}
+              height={500}
+              className="h-full w-auto object-contain object-right"
+            />
+          </div>
         </div>
-      </footer>
+      </section>
+
+      <SiteFooter />
     </main>
   );
 }
 
-function CheckIcon() {
+function CheckGold() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden
-      className="text-primary"
-    >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
       <path
         d="M3 8.5l3 3 6.5-7"
-        stroke="currentColor"
+        stroke="#F7A600"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
-  );
-}
-
-function CategoryCard({
-  title,
-  subtitle,
-  count,
-  accent,
-}: {
-  title: string;
-  subtitle: string;
-  count: string;
-  accent: "primary" | "accent" | "primary-soft" | "accent-soft";
-}) {
-  const barColor =
-    accent === "primary"
-      ? "bg-primary"
-      : accent === "primary-soft"
-        ? "bg-primary-soft"
-        : accent === "accent"
-          ? "bg-accent"
-          : "bg-accent-soft";
-  return (
-    <Link
-      href="/cursos"
-      className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-md"
-    >
-      <div className={`absolute left-0 top-0 h-full w-1 ${barColor}`} />
-      <div className="pl-2">
-        <h3 className="font-display text-xl font-bold tracking-tight">{title}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-        <div className="mt-6 flex items-center justify-between text-xs font-semibold">
-          <span className="text-muted-foreground">{count}</span>
-          <span className="text-primary opacity-0 transition group-hover:opacity-100">
-            Acessar →
-          </span>
-        </div>
-      </div>
-    </Link>
   );
 }
 
@@ -338,14 +271,14 @@ function PersonaCard({
     <div
       className={`relative overflow-hidden rounded-xl border p-7 ${
         highlight
-          ? "border-primary/30 bg-card shadow-lg shadow-primary/5"
+          ? "border-primary/30 bg-card shadow-lg shadow-primary/10"
           : "border-border bg-card"
       }`}
     >
       {highlight && (
         <div
           aria-hidden
-          className="absolute right-0 top-0 h-1 w-full bg-invent-gradient"
+          className="absolute right-0 top-0 h-1 w-full bg-v-gradient"
         />
       )}
       <span className="inline-block rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">

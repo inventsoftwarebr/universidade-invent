@@ -1,20 +1,26 @@
 import { requireRole } from "@/lib/auth/require-role";
+import { InventVMark } from "@/components/brand/InventLogo";
 
 export const metadata = { title: "Admin" };
 
 export default async function AdminHomePage() {
   const user = await requireRole(["admin"]);
+  const firstName = user.fullName?.split(" ")[0] ?? "admin";
   return (
-    <div className="container py-10 md:py-14">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        Console admin
-      </p>
-      <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-        Visão geral da Universidade
-      </h1>
-      <p className="mt-3 text-sm text-muted-foreground">
-        Logado como <span className="font-semibold">{user.fullName ?? user.email}</span>.
-      </p>
+    <div className="mx-auto max-w-6xl">
+      <header className="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+            Console admin
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
+            Olá, {firstName}. Visão geral.
+          </h1>
+        </div>
+        <div className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
+          {user.email}
+        </div>
+      </header>
 
       <section className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Cursos publicados" value="—" />
@@ -23,14 +29,15 @@ export default async function AdminHomePage() {
         <Stat label="Watch time (mês)" value="—" />
       </section>
 
-      <section className="mt-10 rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-        <h2 className="font-display text-xl font-bold tracking-tight">
+      <section className="mt-10 rounded-2xl border border-dashed border-border bg-card p-12 text-center">
+        <InventVMark className="mx-auto h-10" />
+        <h2 className="mt-4 font-display text-xl font-bold tracking-tight">
           Console admin completo chega na semana 8 do MVP.
         </h2>
         <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-          Após o pipeline de autoria (semana 3), catálogo (semana 4) e
-          certificados (semana 6), o admin vê tudo aqui: usuários,
-          empresas, cursos, categorias, drains de webhook, sync HubSpot.
+          Após pipeline de autoria (s3), catálogo (s4) e certificados (s6), o
+          admin vê tudo aqui: usuários, empresas, cursos, drains de webhook,
+          sync HubSpot.
         </p>
       </section>
     </div>

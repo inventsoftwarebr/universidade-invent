@@ -1,159 +1,160 @@
 # Design System — Universidade Invent
 
-Identidade visual extraída do **Manual de Marca Invent 2021** ([PDF original](./brand/manual-de-marca-invent.pdf)). Este documento é a fonte canônica do design system aplicado à Universidade Invent.
+Identidade visual oficial entregue via **Claude Design** ([handoff bundle](./brand/design-system-v2/README.md) + manual de marca em [PDF](./brand/manual-de-marca-invent.pdf)). Esta é a fonte canônica do design system aplicado à Universidade Invent.
 
 ## Princípios
 
 - **Mobile-first.** Aluno consome no celular durante deslocamento.
 - **Performance é design.** Lighthouse 90+ em páginas-chave.
-- **Acessibilidade nunca é "depois".** Toda iteração passa por checklist WCAG AA. Contraste mínimo: AA em UI, AAA em corpo longo.
-- **Player de vídeo é o componente mais importante.** Maior cuidado de polimento.
-- **Sutileza vence excesso.** O grafismo "V invent" e a faixa diagonal vermelha são acentos, nunca o protagonista de cada tela. Brand entra em hero, empty states e momentos de transição — não em formulários ou listas densas.
+- **Acessibilidade nunca é "depois".** Toda iteração passa por checklist WCAG AA. Contraste mínimo AA em UI, AAA em corpo longo.
+- **Player de vídeo é o componente mais importante** da experiência. Maior cuidado de polimento.
+- **Sutileza vence excesso.** O V-mark e a `surface-premium` (dark hero) são acentos, nunca o protagonista de cada tela. Brand entra em hero, empty states e momentos de transição — não em formulários ou listas densas.
 
 ## Cores
 
-Definidas em [`app/globals.css`](../app/globals.css) como variáveis HSL (padrão shadcn). Os tokens semânticos referenciam as cores base; nunca use hex literal em componentes — sempre via Tailwind (`text-primary`, `bg-primary-hover`, etc.).
+Tokens em [`app/globals.css`](../app/globals.css) — primitivas Invent (`--invent-*`) + aliases semânticos HSL para shadcn/Tailwind. Em componentes, **prefira classes semânticas** (`bg-primary`, `text-accent`, `border-border`) sobre cor literal.
 
-### Brand — Vermelhos principais (manual: "Principal")
+### Brand — palette canônica
 
-| Token | Hex | HSL | Uso |
+| Token | Hex | Uso |
+|---|---|---|
+| **`--invent-gold-500`** (PRIMARY) | `#F7A600` | Cor dominante: CTAs primários, eyebrows, links de navegação ativos, headings hero. **Mais usada do que vermelho ou preto.** |
+| `--invent-gold-600` | `#D08800` | Hover do primary |
+| `--invent-gold-300` | `#FFC246` | Highlights em fundos escuros |
+| **`--invent-red-500`** (ACCENT) | `#D81E2D` | Acentos, badges, indicadores ativos. Use **contra** dourado, não como surface |
+| `--invent-red-700` | `#8E121C` | Hover do accent / texto em estados ativos |
+| `--invent-red-50` | `#FFEDEE` | Background de itens ativos em listas/nav |
+| `--invent-ink` | `#1F1F23` | Texto principal |
+| `--invent-gray-700` | `#4B5566` | Texto secundário (cor exata do wordmark) |
+| `--invent-gray-500` | `#8B92A0` | Texto terciário / captions |
+| `--invent-gray-200` | `#E2E5EA` | Bordas, divisórias |
+| `--invent-gray-50` | `#F7F8FA` | Background canvas |
+| `--invent-black` | `#0A0A0B` | Surface premium (hero dark) |
+
+### Cores por produto
+
+| Produto | Inicial | Cor | Token |
 |---|---|---|---|
-| `--primary` | `#E41216` | `359 84% 48%` | CTA principal, links, links ativos, badges de marca, logo |
-| `--primary-hover` | `#B6221A` | `4 75% 41%` | Hover/pressed dos elementos `primary` |
-| `--primary-soft` | `#F94343` | `0 94% 62%` | Estados suaves, highlights leves, focus rings em fundo claro |
-| (manual extra) | `#A81A16` | — | Reservado, vinho — use só se precisar de variação adicional |
+| **TaxPlus** | T | Roxo profundo `#4527A0` | `bg-product-tax` |
+| **BankPlus** | B | Dourado `#F7A600` | `bg-product-bank` |
+| **ContractPlus** | C | Vermelho `#D81E2D` | `bg-product-contract` |
+| **Invent Payroll** | (sem marca publicada) | Cinza cool `#4B5566` | `bg-product-payroll` |
 
-### Brand — Complementares (manual: "Complementar")
+Usar **só em surfaces específicas do produto** (cards de curso daquela trilha, badges de categoria, splashes de capa). Nunca usar TaxPlus roxo em chrome de UI fora de contexto TaxPlus.
 
-| Token | Hex | HSL | Uso |
-|---|---|---|---|
-| `--accent` | `#FBB33B` | `38 96% 61%` | Destaque secundário, badges, indicadores de progresso |
-| `--accent-soft` | `#FBBD3B` | `42 96% 61%` | Hover de elementos accent, highlights mais quentes |
+### Gradiente V-mark
 
-### Neutros (manual: "P/B")
-
-| Token | Hex | HSL | Uso |
-|---|---|---|---|
-| `--foreground` | `#1F1F26` | `240 12% 14%` | Texto principal (mais escuro que o `#535260` do manual para AAA em corpo) |
-| `--muted-foreground` | `#535260` | `238 7% 35%` | Texto secundário, captions — cor exata do manual |
-| `--border` / `--input` | `#E2E3E8` | `225 11% 90%` | Bordas, divisórias, inputs em repouso — cor exata do manual |
-| `--background` | `#FFFFFF` | `0 0% 100%` | Fundo padrão |
-| `--background-subtle` | ~`#F6F6F8` | `225 11% 97%` | Seções alternadas, footer |
-
-### Dark mode
-
-Apoiado no quase-preto do hero do manual (`#0E0E13`). Vermelho fica `#F94343` (`--primary-soft`) por contraste; bordas em `#2A2A33`. Override completo em `app/globals.css :root.dark`.
-
-### Gradiente do logo (`v` 3D)
-
-Vermelho → laranja → amarelo conforme transição cromática do "v" tridimensional do logotipo:
+Vertical, dourado (topo) → vermelho (base):
 
 ```css
-linear-gradient(135deg, #B6221A 0%, #E41216 25%, #FBB33B 75%, #FBBD3B 100%)
+linear-gradient(180deg, #FFB000 0%, #F7A600 38%, #D81E2D 78%, #B81825 100%)
 ```
 
-Disponível como utilities `bg-invent-gradient` e `text-invent-gradient`. **Uso restrito:** headlines hero (uma palavra ou frase curta), badges premium/destaque, barras de progresso celebratórias. Nunca como fundo de seção inteira.
+Utilities Tailwind: `bg-v-gradient`, `text-v-gradient`. **Uso restrito:**
+- Headlines hero (uma palavra-chave; ex.: "SAP da Invent")
+- Badges premium / "em destaque"
+- Barras de progresso celebratórias
+- Glow decorativo (com blur) em cards heroes
+
+**Não usar** em fundos de seção inteira, botões normais, texto de corpo.
+
+### Surface premium (dark)
+
+Utility `surface-premium`. Fundo escuro com glows sutis dourado + vermelho. Usar em:
+- Hero de marketing
+- Painel de splash em páginas de auth
+- Banners de seção tipo "ISV premiada"
+- **Nunca** em UI operacional (admin, instrutor, aluno) — esses ficam sempre na variante light.
+
+```html
+<section class="surface-premium text-white">...</section>
+```
 
 ## Tipografia
 
-- **Display + body: Montserrat** ([Google Fonts](https://fonts.google.com/specimen/Montserrat)) — manual prescreve Montserrat para "Conteúdo institucional" (apresentações, papelaria, comunicados); aplicamos como tipografia única da UI.
-- **Logotipo: Le Havre** (Adobe Fonts) — restrita ao logotipo conforme manual ("mediante aprovação"). Não usar em UI. No componente `InventLogo`, substituída por Montserrat ExtraBold (Le Havre não tem licença Google).
-- **Pesos disponíveis no app:** 400 (regular), 500 (medium), 600 (semibold), 700 (bold), 800 (extrabold — display).
+Substituição do manual oficial (Le Havre — Adobe Fonts, restrita ao logo) por Google Fonts:
+
+- **Display: Barlow** (sans geométrico, levemente condensado) — pesos 500/600/700/800. Variável `--font-display`. Tailwind: `font-display`.
+- **Body / UI: Inter** — pesos 400/500/600/700. Variável `--font-body`. Tailwind: `font-sans` (default).
+- **Mono: JetBrains Mono** — para durações de aula, código, badges técnicos. Variável `--font-mono`. Tailwind: `font-mono`.
 
 ### Hierarquia
 
 | Nível | Classe Tailwind | Uso |
 |---|---|---|
-| Display XL | `font-display text-6xl md:text-7xl font-extrabold tracking-tight-display` | Hero da home |
-| Display L | `font-display text-4xl md:text-5xl font-extrabold tracking-tight` | Páginas de seção (sobre, catálogo) |
-| Display M | `font-display text-3xl md:text-4xl font-bold tracking-tight` | Section headings |
+| Display XL | `font-display text-6xl md:text-7xl font-extrabold tracking-tight` | Hero da home |
+| Display L | `font-display text-4xl md:text-5xl font-extrabold tracking-tight` | Headers de seção (sobre, catálogo) |
+| Display M | `font-display text-3xl md:text-4xl font-bold tracking-tight` | Section headings dentro de páginas |
 | Display S | `font-display text-xl md:text-2xl font-bold tracking-tight` | Card titles, modal headings |
-| Body L | `text-lg md:text-xl text-muted-foreground` | Lead paragraph, intros |
+| Body L | `text-lg md:text-xl text-muted-foreground` | Lead paragraph |
 | Body | `text-base` | Padrão |
 | Small | `text-sm text-muted-foreground` | Meta, captions |
-| Micro | `text-xs font-semibold uppercase tracking-wider` | Eyebrow labels, badge text |
+| Micro/eyebrow | `text-xs font-semibold uppercase tracking-wider text-primary` | Eyebrow labels |
 
-## Espaçamento e raio
+## Espaçamento e raios
 
-- **Radius base:** `--radius: 0.5rem` (8px). Tailwind: `rounded-md`/`rounded-lg`/`rounded-sm` derivados.
-- **Cards grandes / hero:** `rounded-2xl` (16px).
-- **Pills / avatars / badges:** `rounded-full`.
-- **Container:** centralizado, padding lateral 1.5rem, max 1280px (`container`).
-- **Vertical rhythm de seção:** `py-16 md:py-20` (padrão), `py-20 md:py-28` (hero).
+- Radius base: `--radius: 0.5rem` (8px). `rounded-md` (6), `rounded-lg` (8), `rounded-xl` (12), `rounded-2xl` (16). `rounded-full` para pills/avatars.
+- Sombras: `shadow-xs` / `shadow-sm` / `shadow-md` / `shadow-lg` / `shadow-xl` — todas calibradas no `tailwind.config.ts`.
+- Container: max 1280px (Tailwind default ajustado).
+- Vertical rhythm: `py-16 md:py-20` (padrão), `py-20 md:py-28` (hero).
 
-## Grafismo oficial
+## Componentes
 
-### V invent (componente `<InventVMark />`)
+### Logos (`components/brand/InventLogo.tsx`)
 
-Símbolo isolado, sem o texto "invent". Manual libera em backgrounds e elementos de apoio "mantendo proporção e cores".
+Sempre PNGs oficiais via `next/image` (em `public/brand/`).
 
-| Variant | Quando usar |
+| Componente | Quando usar |
 |---|---|
-| `default` | V tridimensional vermelho + amarelo (padrão) |
-| `outline` | Linhas finas, sobreposição em imagens claras |
-| `solid-red` / `solid-yellow` | Iluminado / monocromático |
+| `<InventLogo variant="light-bg" />` | Fundos claros — `invent-cinza.png` (wordmark cinza + V colorido) |
+| `<InventLogo variant="dark-bg" />` | Fundos escuros (surface-premium, hero dark) — `invent-branca.png` |
+| `<InventVMark />` | Símbolo "V" isolado — `v-mark.png`. Usar em badges, favicons, decorações |
+| `<ProductLogo product="taxplus" />` | Logo do produto Invent específico (taxplus/bankplus/contractplus) |
 
-Tamanhos recomendados: 24-48px em badges; 80-120px em hero; 400px+ em background decorativo com `opacity` ≤ 8%.
+Tamanho mínimo recomendado: 100px de largura para o wordmark completo.
 
-### Faixa diagonal vermelha
+### Layout
 
-Motivo recorrente nas peças do manual (faixas inclinadas saindo das laterais). Use como acento de borda, não como container. Implementação via `clip-path`:
+- **Marketing**: `<SiteHeader />` + `<SiteFooter />` de `components/marketing/SiteShell.tsx`. Header sticky, footer simples.
+- **Área logada**: `<AppShell />` de `components/app/AppShell.tsx` — sidebar fixa de 260px à esquerda (desktop) com nav por papel, mini-card de trilha, user box. Em mobile vira topbar.
 
-```tsx
-<div
-  aria-hidden
-  className="pointer-events-none absolute left-0 top-0 h-full w-[14%] bg-gradient-to-b from-primary to-primary-hover"
-  style={{ clipPath: "polygon(0 0, 100% 0, 60% 100%, 0 100%)" }}
-/>
-```
+### Auth
 
-Aplicar com moderação — uma por página, sempre no hero ou área principal.
+`components/auth/SignInForm.tsx` + `SignUpForm.tsx` + `OAuthButton.tsx` (Google/Microsoft) + `SignOutButton.tsx` — tudo wired aos server actions em `lib/auth/actions.ts`.
 
-### Logo (`<InventLogo />`)
+## Iconografia
 
-| Variant | Quando usar |
-|---|---|
-| `default` | Padrão — texto cinza escuro / branco em dark, "v" colorido |
-| `mono-dark` | Fundos coloridos claros sem competir com o brand |
-| `mono-light` | Fundos escuros, dark hero |
-
-Tamanho mínimo recomendado: 100px de largura.
-
-## Componentes (estado atual)
-
-Tudo em `components/`. shadcn/ui adicionado sob demanda em `components/ui/` conforme primitivos necessários.
-
-| Componente | Localização |
-|---|---|
-| Logo + V mark | `components/brand/InventLogo.tsx` |
-| Header + footer | `components/marketing/SiteShell.tsx` |
+Inline SVG (estilo Lucide) em `components/app/AppShell.tsx#ICONS`. Stroke 1.75px, 18-24px nominal, `currentColor`. Para casos novos: copiar do conjunto Lucide e seguir o mesmo formato (stroke-based, sem fill). Não usar emoji em UI de produto.
 
 ## Tom e voz
 
 - **Português brasileiro**, segunda pessoa direta ("você"). Sem formalidade exagerada; sem gíria.
-- **Verbo no imperativo afirmativo** em CTAs ("Explorar cursos", "Continuar curso", "Emitir certificado").
-- **Frases curtas em hero**, parágrafos médios em corpo. Evitar bullet points que substituam parágrafos completos.
-- **Termos SAP em inglês** quando consagrados (`Business One`, `S/4HANA`, `SPED`, `NF-e`), mas evite jargão sem contexto fora da área técnica.
-- **Sem emoji** em UI de produto. OK em copy de email transacional moderadamente.
+- Verbo no imperativo afirmativo em CTAs ("Explorar cursos", "Continuar curso", "Emitir certificado").
+- Frases curtas em hero; parágrafos médios em corpo.
+- Produtos em PascalCase: TaxPlus, BankPlus, ContractPlus (nunca "Tax Plus" ou "TAXPLUS"). SAP com `®` quando o contexto for legal/institucional (SAP®, SAP Business One®).
+- Sem emoji em UI de produto. OK em copy de email moderadamente.
+- Vibe markers que recorrem na marca: "Otimizar a performance de pessoas e empresas", "Sem dor de cabeça", "Jeito InventER de ser".
 
 ## Acessibilidade
 
-- Todo botão e link têm focus visible com `focus:ring-2 focus:ring-primary/20`.
+- Focus visible: `focus:ring-2 focus:ring-primary/30`.
 - Alvos de toque mínimos 44×44px em mobile.
-- Tons cinza muito claro só para divisórias, nunca texto.
-- Imagens decorativas (V mark de fundo, faixas) têm `aria-hidden`.
-- Contraste mínimo verificado:
-  - `foreground` em `background`: **15.4:1** (AAA)
-  - `muted-foreground` em `background`: **8.1:1** (AAA)
-  - `primary-foreground` em `primary`: **5.3:1** (AA)
+- Imagens decorativas (V-mark de fundo, hero illustrations) têm `aria-hidden`.
 - Sem dependência exclusiva de cor: cards de categoria usam barra colorida + texto, indicadores de progresso usam % textual.
+- Cores semânticas têm contraste verificado:
+  - `foreground` em `background`: AAA
+  - `muted-foreground` em `background`: AA+
+  - `primary-foreground` em `primary` (branco em dourado): borderline AA — para texto pequeno, considerar `text-invent-gray-900` no hover
 
 ## Onde tocar quando o design evoluir
 
-1. Tokens de cor / radius / spacing → `app/globals.css` (variáveis HSL).
-2. Fonte → `app/layout.tsx` (configuração `next/font`) + `tailwind.config.ts` (`fontFamily`).
-3. Logo / V mark → `components/brand/InventLogo.tsx`.
-4. Header / footer compartilhados → `components/marketing/SiteShell.tsx`.
-5. shadcn/ui adicionados via `pnpm dlx shadcn add <component>` em `components/ui/`.
+| O que mudou | Onde editar |
+|---|---|
+| Tokens (cores, radius, sombra) | `app/globals.css` (vars CSS) + `tailwind.config.ts` (aliases) |
+| Fonte | `app/layout.tsx` (next/font config) + `tailwind.config.ts` (fontFamily) |
+| Logo | `components/brand/InventLogo.tsx` + arquivos em `public/brand/` |
+| Header/footer marketing | `components/marketing/SiteShell.tsx` |
+| Sidebar logada | `components/app/AppShell.tsx` |
+| Forms de auth | `components/auth/*.tsx` |
 
-Atualize este documento sempre que adicionar um token novo, mudar pesos de tipografia ou criar um componente de marca.
+Sempre atualize **este documento** quando adicionar token novo, mudar peso de tipografia ou criar componente de marca.

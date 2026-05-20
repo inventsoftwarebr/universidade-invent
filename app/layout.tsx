@@ -1,12 +1,32 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Barlow, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const montserrat = Montserrat({
+/*
+ * Tipografia oficial Invent:
+ *   - Barlow (display) substituindo Le Havre (Adobe Fonts)
+ *   - Inter (body)
+ *   - JetBrains Mono (code/durations no player)
+ */
+const barlow = Barlow({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-display",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["500", "600", "700", "800"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -15,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s · Universidade Invent",
   },
   description:
-    "Cursos oficiais da Invent Software sobre nossos addons fiscais, financeiros e de contratos para SAP Business One e SAP S/4HANA Cloud ERP.",
+    "Cursos oficiais da Invent Software sobre nossos addons TaxPlus, BankPlus, ContractPlus e Invent Payroll para SAP Business One e SAP S/4HANA Cloud ERP.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
@@ -26,7 +46,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${montserrat.variable} font-sans`}>{children}</body>
+      <body
+        className={`${inter.variable} ${barlow.variable} ${mono.variable} font-sans`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
