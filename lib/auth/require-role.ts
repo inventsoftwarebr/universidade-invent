@@ -39,6 +39,31 @@ export async function requireUser(): Promise<CurrentUser> {
 }
 
 /**
+ * Usuário da sessão, ou `null` se anônimo — sem redirecionar. Para páginas
+ * públicas que mudam de CTA conforme o visitante está logado.
+ */
+export async function getOptionalUser(): Promise<CurrentUser | null> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    fullName: profile?.full_name ?? null,
+    role: (profile?.role as Role | undefined) ?? "aluno",
+  };
+}
+
+/**
  * Como `requireUser`, mas além disso garante que o role esteja na lista
  * permitida. Sem acesso → redireciona para a home do papel real do usuário.
  */

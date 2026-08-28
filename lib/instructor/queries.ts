@@ -14,6 +14,7 @@ import {
   modules,
   videoAssets,
 } from "@/db/schema";
+import { ptBR } from "@/lib/i18n/text";
 
 export type InstructorCourseRow = {
   id: string;
@@ -27,12 +28,6 @@ export type InstructorCourseRow = {
   moduleCount: number;
   lessonCount: number;
 };
-
-function ptBR(json: unknown, fallback = ""): string {
-  if (!json || typeof json !== "object") return fallback;
-  const obj = json as Record<string, string>;
-  return obj["pt-BR"] ?? obj.en ?? Object.values(obj)[0] ?? fallback;
-}
 
 export async function listInstructorCourses(
   instructorId: string,

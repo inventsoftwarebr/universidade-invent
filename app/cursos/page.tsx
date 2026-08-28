@@ -1,53 +1,61 @@
 import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/marketing/SiteShell";
 import { InventVMark } from "@/components/brand/InventLogo";
+import { CourseCard } from "@/components/learn/CourseCard";
+import {
+  LEVEL_LABEL,
+  listCatalogCategories,
+  listPublishedCourses,
+  type CourseLevel,
+} from "@/lib/catalog/queries";
 
-const TRACKS = [
-  {
-    slug: "taxplus",
-    name: "TaxPlus",
-    description: "Fiscal · NF-e · NFS-e · SPED",
-    color: "bg-product-tax",
-    count: 12,
-  },
-  {
-    slug: "bankplus",
-    name: "BankPlus",
-    description: "Conciliação · CNAB · Pagamentos",
-    color: "bg-product-bank",
-    count: 7,
-  },
-  {
-    slug: "contractplus",
-    name: "ContractPlus",
-    description: "Contratos · Faturamento recorrente",
-    color: "bg-product-contract",
-    count: 5,
-  },
-  {
-    slug: "sap-b1",
-    name: "SAP Business One",
-    description: "Fundamentos do ERP base",
-    color: "bg-invent-ink",
-    count: 8,
-  },
-  {
-    slug: "payroll",
-    name: "Invent Payroll",
-    description: "Folha de pagamento na nuvem",
-    color: "bg-product-payroll",
-    count: 4,
-  },
-  {
-    slug: "bi",
-    name: "BI & Dashboards",
-    description: "Dashboards executivos e KPIs",
-    color: "bg-accent",
-    count: 3,
-  },
-];
+export const metadata = {
+  title: "Cursos",
+  description:
+    "Catálogo da Universidade Invent: TaxPlus, BankPlus, ContractPlus e SAP Business One.",
+};
 
-export default function CursosPage() {
+const LEVELS: CourseLevel[] = ["intro", "intermediate", "advanced"];
+
+function parseLevel(value: string | undefined): CourseLevel | undefined {
+  return LEVELS.find((l) => l === value);
+}
+
+/** Preserva os filtros ativos ao trocar um deles. */
+function buildHref(
+  current: { category?: string; level?: string; q?: string },
+  patch: Partial<{ category: string | null; level: string | null }>,
+): string {
+  const params = new URLSearchParams();
+  const category = patch.category !== undefined ? patch.category : current.category;
+  const level = patch.level !== undefined ? patch.level : current.level;
+  if (category) params.set("categoria", category);
+  if (level) params.set("nivel", level);
+  if (current.q) params.set("q", current.q);
+  const qs = params.toString();
+  return qs ? `/cursos?${qs}` : "/cursos";
+}
+
+export default async function CursosPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const category = typeof params.categoria === "string" ? params.categoria : undefined;
+  const level = parseLevel(
+    typeof params.nivel === "string" ? params.nivel : undefined,
+  );
+  const q = typeof params.q === "string" ? params.q.trim() || undefined : undefined;
+
+  const [categories, courses] = await Promise.all([
+    listCatalogCategories(),
+    listPublishedCourses({ category, level, q }),
+  ]);
+
+  const current = { category, level, q };
+  const hasFilters = Boolean(category || level || q);
+
   return (
     <>
       <SiteHeader />
@@ -61,53 +69,155 @@ export default function CursosPage() {
               Todos os cursos da Universidade Invent.
             </h1>
             <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-              Filtre por produto, persona ou nível. Você verá apenas os cursos
-              disponíveis ao seu nível de acesso após entrar.
+              Cursos sobre os addons Invent para SAP Business One e S/4HANA
+              Cloud, produzidos por quem implanta.
             </p>
+
+            <form action="/cursos" className="mt-8 flex max-w-md gap-2">
+              {category ? (
+                <input type="hidden" name="categoria" value={category} />
+              ) : null}
+              {level ? <input type="hidden" name="nivel" value={level} /> : null}
+              <input
+                type="search"
+                name="q"
+                defaultValue={q ?? ""}
+                placeholder="Buscar por assunto, produto ou obrigação"
+                aria-label="Buscar cursos"
+                className="h-11 w-full rounded-md border border-border bg-card px-4 text-sm outline-none ring-primary/40 placeholder:text-muted-foreground focus-visible:ring-2"
+              />
+              <button
+                type="submit"
+                className="h-11 shrink-0 rounded-md bg-invent-ink px-5 text-sm font-semibold text-white transition hover:bg-invent-black"
+              >
+                Buscar
+              </button>
+            </form>
           </div>
         </section>
 
-        <section className="container py-16">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {TRACKS.map((t) => (
-              <Link
-                key={t.slug}
-                href={`/cursos?track=${t.slug}`}
-                className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className={`absolute left-0 top-0 h-full w-1 ${t.color}`} />
-                <div className="pl-2">
-                  <h2 className="font-display text-xl font-bold tracking-tight">
-                    {t.name}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t.description}
-                  </p>
-                  <div className="mt-6 flex items-center justify-between text-xs font-semibold">
-                    <span className="text-muted-foreground">{t.count} cursos</span>
-                    <span className="text-accent opacity-0 transition group-hover:opacity-100">
-                      Acessar →
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+        <section className="container py-12 md:py-16">
+          <nav
+            aria-label="Filtros do catálogo"
+            className="flex flex-col gap-4 border-b border-border pb-8"
+          >
+            <FilterRow label="Categoria">
+              <FilterChip href={buildHref(current, { category: null })} active={!category}>
+                Todas
+              </FilterChip>
+              {categories.map((c) => (
+                <FilterChip
+                  key={c.slug}
+                  href={buildHref(current, { category: c.slug })}
+                  active={category === c.slug}
+                >
+                  {c.name}
+                  <span className="ml-1.5 text-muted-foreground">{c.courseCount}</span>
+                </FilterChip>
+              ))}
+            </FilterRow>
 
-          <div className="mt-16 rounded-2xl border border-dashed border-border bg-background-subtle p-12 text-center">
-            <InventVMark className="mx-auto h-10" />
-            <h3 className="mt-4 font-display text-xl font-bold tracking-tight">
-              Catálogo completo chega na semana 4 do MVP.
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Listagem com filtros, busca e cards de curso com progresso e
-              tempo estimado entra em ritmo após o pipeline de autoria
-              (semana 3).
-            </p>
-          </div>
+            <FilterRow label="Nível">
+              <FilterChip href={buildHref(current, { level: null })} active={!level}>
+                Todos
+              </FilterChip>
+              {LEVELS.map((l) => (
+                <FilterChip
+                  key={l}
+                  href={buildHref(current, { level: l })}
+                  active={level === l}
+                >
+                  {LEVEL_LABEL[l]}
+                </FilterChip>
+              ))}
+            </FilterRow>
+          </nav>
+
+          <p className="mt-8 text-sm text-muted-foreground">
+            {courses.length === 1
+              ? "1 curso encontrado"
+              : `${courses.length} cursos encontrados`}
+          </p>
+
+          {courses.length > 0 ? (
+            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {courses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          ) : (
+            <EmptyCatalog hasFilters={hasFilters} />
+          )}
         </section>
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+function FilterRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="mr-1 w-20 shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function FilterChip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "true" : undefined}
+      className={
+        active
+          ? "rounded-full border border-invent-ink bg-invent-ink px-3.5 py-1.5 text-xs font-semibold text-white"
+          : "rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground transition hover:border-invent-gray-500"
+      }
+    >
+      {children}
+    </Link>
+  );
+}
+
+function EmptyCatalog({ hasFilters }: { hasFilters: boolean }) {
+  return (
+    <div className="mt-8 rounded-2xl border border-dashed border-border bg-background-subtle p-12 text-center">
+      <InventVMark className="mx-auto h-10" />
+      <h2 className="mt-4 font-display text-xl font-bold tracking-tight">
+        {hasFilters
+          ? "Nenhum curso com esses filtros."
+          : "O catálogo ainda está sendo publicado."}
+      </h2>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        {hasFilters
+          ? "Tente ampliar a busca ou remover um filtro."
+          : "Os primeiros cursos-piloto entram assim que a equipe de conteúdo publicar."}
+      </p>
+      {hasFilters ? (
+        <Link
+          href="/cursos"
+          className="mt-6 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-hover"
+        >
+          Limpar filtros
+        </Link>
+      ) : null}
+    </div>
   );
 }

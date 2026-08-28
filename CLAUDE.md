@@ -62,6 +62,8 @@ Default deny. Cada tabela tem políticas explícitas em `db/rls.sql`. Helpers SQ
 
 Antes de criar ou alterar tabela: garanta a política em `db/rls.sql` no mesmo commit. PR sem RLS é PR quebrado.
 
+**Atenção — Drizzle não passa por RLS.** O `DATABASE_URL` conecta com o papel do pooler, então toda query em `lib/*/queries.ts` roda como superusuário lógico: as policies não te protegem ali. Quem lê ou escreve via Drizzle **precisa** autorizar em código, sempre partindo do `id` da sessão (`requireUser()`), e a regra escrita deve espelhar a policy equivalente. Exemplos: `publishedAndPublic()` em `lib/catalog/queries.ts` espelha `courses_read_published`; `getPlayerData()` em `lib/learn/queries.ts` exige matrícula antes de resolver `content_ref`, como `lessons_read`. RLS continua valendo como última linha de defesa para o que passa pelo PostgREST/Supabase client.
+
 ### 5. `auth.users` ↔ `profiles` — trigger obrigatório
 
 Toda criação em `auth.users` dispara `handle_new_user()` que insere em `public.profiles`. Sem isso, signups deixam órfãos. A trigger está em `db/rls.sql`.
@@ -97,7 +99,8 @@ Consentimento granular separado dos termos (marketing email, WhatsApp). Páginas
 ## Convenções de código
 
 - Idioma do código: **inglês** (nomes de tabela, função, variável). Strings de UI em pt-BR via `next-intl`.
-- Slugs de URL em pt-BR (`/cursos/...`, `/aulas/...`, `/verificar/...`).
+- Slugs de URL em pt-BR (`/cursos/...`, `/aprender/...`, `/verificar/...`).
+- A aula é servida em `/aprender/[courseSlug]/[lessonId]`, não em `/aulas/[slug]`: `lessons` não tem coluna `slug`, e a rota dentro de `/aprender` já herda o gate de autenticação do layout. Se um dia a aula precisar de URL pública, aí sim cria-se o slug.
 - Sem `console.log` em código de produção — usar Sentry.
 - Sem `any`. Usar `unknown` + narrowing ou tipos próprios.
 - Server Actions sempre validam input com Zod no servidor (não confiar no client).

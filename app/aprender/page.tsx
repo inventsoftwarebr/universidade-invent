@@ -1,59 +1,31 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth/require-role";
 import { InventVMark } from "@/components/brand/InventLogo";
+import { CourseCard } from "@/components/learn/CourseCard";
+import { requireUser } from "@/lib/auth/require-role";
+import { listPublishedCourses } from "@/lib/catalog/queries";
+import { listEnrolledCourses } from "@/lib/learn/queries";
 
 export const metadata = { title: "Aprender" };
-
-/*
- * Mock data — substituir por queries reais quando o catálogo/enrollments
- * existir (semanas 3-4). A estrutura imita o que vai vir do banco.
- */
-const CONTINUE: Array<{
-  id: string;
-  title: string;
-  product: "taxplus" | "bankplus" | "contractplus" | "payroll";
-  progress: number;
-  durationMin: number;
-}> = [];
-
-const FRESH = [
-  {
-    id: "tp101",
-    title: "Fundamentos do TaxPlus",
-    product: "taxplus" as const,
-    level: "Iniciante",
-    lessons: 12,
-    durationMin: 142,
-  },
-  {
-    id: "bp201",
-    title: "BankPlus: Conciliação avançada",
-    product: "bankplus" as const,
-    level: "Avançado",
-    lessons: 14,
-    durationMin: 188,
-  },
-  {
-    id: "cp101",
-    title: "Gestão de contratos com ContractPlus",
-    product: "contractplus" as const,
-    level: "Iniciante",
-    lessons: 10,
-    durationMin: 110,
-  },
-  {
-    id: "sap-b1",
-    title: "SAP Business One para administradores",
-    product: "payroll" as const,
-    level: "Iniciante",
-    lessons: 24,
-    durationMin: 320,
-  },
-];
 
 export default async function AprenderHomePage() {
   const user = await requireUser();
   const firstName = user.fullName?.split(" ")[0] ?? "estudante";
+
+  const enrolled = await listEnrolledCourses(user.id);
+  const enrolledIds = new Set(enrolled.map((e) => e.courseId));
+
+  // "Continuar" = cursos com atividade e ainda inacabados, mais recentes antes.
+  const continueList = enrolled
+    .filter((e) => e.progressPct < 100 && e.lastEventAt !== null)
+    .sort(
+      (a, b) => (b.lastEventAt?.getTime() ?? 0) - (a.lastEventAt?.getTime() ?? 0),
+    );
+  const notStarted = enrolled.filter((e) => e.lastEventAt === null);
+
+  const catalog = await listPublishedCourses();
+  const fresh = catalog.filter((c) => !enrolledIds.has(c.id)).slice(0, 4);
+
+  const totalCompleted = enrolled.filter((e) => e.progressPct === 100).length;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -63,36 +35,111 @@ export default async function AprenderHomePage() {
             Bem-vindo, {firstName}
           </p>
           <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-            Continue de onde parou.
+            {continueList.length > 0
+              ? "Continue de onde parou."
+              : "Vamos começar seu primeiro curso."}
           </h1>
         </div>
-        <ProgressRingStat pct={0} label="Início da Trilha SAP B1" sub="0 de 8 cursos" />
+        {enrolled.length > 0 ? (
+          <ProgressRingStat
+            pct={
+              enrolled.length > 0
+                ? Math.round(totalCompleted * 100 / enrolled.length)
+                : 0
+            }
+            label="Cursos concluídos"
+            sub={`${totalCompleted} de ${enrolled.length} matrículas`}
+          />
+        ) : null}
       </header>
 
-      {CONTINUE.length > 0 ? (
-        <CourseRail title="Continue assistindo" courses={CONTINUE} variant="continue" />
-      ) : (
-        <EmptyContinueCard />
-      )}
-
-      <section className="mt-12">
-        <header className="mb-5 flex items-baseline justify-between">
-          <h2 className="font-display text-2xl font-bold tracking-tight">
-            Novos no catálogo
+      {continueList.length > 0 ? (
+        <section className="mt-10">
+          <h2 className="mb-5 font-display text-2xl font-bold tracking-tight">
+            Continue assistindo
           </h2>
-          <Link
-            href="/cursos"
-            className="text-sm font-semibold text-accent hover:text-invent-red-700"
-          >
-            Ver catálogo →
-          </Link>
-        </header>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {FRESH.map((c) => (
-            <CourseCard key={c.id} course={c} />
-          ))}
-        </div>
-      </section>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {continueList.map((course) => (
+              <CourseCard
+                key={course.enrollmentId}
+                course={{
+                  slug: course.courseSlug,
+                  title: course.title,
+                  summary: course.summary,
+                  level: course.level,
+                  categorySlug: course.categorySlug,
+                  estimatedMinutes: null,
+                  lessonCount: course.lessonCount,
+                }}
+                progressPct={course.progressPct}
+                href={
+                  course.nextLessonId
+                    ? `/aprender/${course.courseSlug}/${course.nextLessonId}`
+                    : `/cursos/${course.courseSlug}`
+                }
+                ctaLabel={
+                  course.nextLessonTitle
+                    ? `Retomar: ${course.nextLessonTitle}`
+                    : "Retomar"
+                }
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {notStarted.length > 0 ? (
+        <section className="mt-12">
+          <h2 className="mb-5 font-display text-2xl font-bold tracking-tight">
+            Suas matrículas
+          </h2>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {notStarted.map((course) => (
+              <CourseCard
+                key={course.enrollmentId}
+                course={{
+                  slug: course.courseSlug,
+                  title: course.title,
+                  summary: course.summary,
+                  level: course.level,
+                  categorySlug: course.categorySlug,
+                  estimatedMinutes: null,
+                  lessonCount: course.lessonCount,
+                }}
+                href={
+                  course.nextLessonId
+                    ? `/aprender/${course.courseSlug}/${course.nextLessonId}`
+                    : `/cursos/${course.courseSlug}`
+                }
+                ctaLabel="Começar"
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {enrolled.length === 0 ? <EmptyContinueCard /> : null}
+
+      {fresh.length > 0 ? (
+        <section className="mt-12">
+          <header className="mb-5 flex items-baseline justify-between">
+            <h2 className="font-display text-2xl font-bold tracking-tight">
+              Novos no catálogo
+            </h2>
+            <Link
+              href="/cursos"
+              className="text-sm font-semibold text-accent hover:text-invent-red-700"
+            >
+              Ver catálogo →
+            </Link>
+          </header>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {fresh.map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -112,7 +159,7 @@ function ProgressRingStat({
   const c = 2 * Math.PI * r;
   return (
     <div className="flex items-center gap-3">
-      <svg width={size} height={size}>
+      <svg width={size} height={size} role="img" aria-label={`${pct}% ${label}`}>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -169,106 +216,5 @@ function EmptyContinueCard() {
         Explorar cursos
       </Link>
     </div>
-  );
-}
-
-type ProductSlug = "taxplus" | "bankplus" | "contractplus" | "payroll";
-const PRODUCT_COVER: Record<ProductSlug, string> = {
-  taxplus: "from-product-tax to-invent-black",
-  bankplus: "from-product-bank to-invent-black",
-  contractplus: "from-product-contract to-invent-black",
-  payroll: "from-product-payroll to-invent-black",
-};
-const PRODUCT_LABEL: Record<ProductSlug, string> = {
-  taxplus: "TaxPlus",
-  bankplus: "BankPlus",
-  contractplus: "ContractPlus",
-  payroll: "Payroll",
-};
-
-function fmtDur(min: number) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return h ? `${h}h ${m}min` : `${m}min`;
-}
-
-function CourseRail({
-  title,
-  courses,
-  variant: _v,
-}: {
-  title: string;
-  courses: typeof CONTINUE;
-  variant: "continue";
-}) {
-  return (
-    <section className="mt-10">
-      <header className="mb-5 flex items-baseline justify-between">
-        <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
-      </header>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {courses.map((c) => (
-          <CourseCard
-            key={c.id}
-            course={{
-              id: c.id,
-              title: c.title,
-              product: c.product,
-              level: `${c.progress}% completo`,
-              lessons: 0,
-              durationMin: c.durationMin,
-            }}
-            progress={c.progress}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function CourseCard({
-  course,
-  progress,
-}: {
-  course: {
-    id: string;
-    title: string;
-    product: ProductSlug;
-    level: string;
-    lessons: number;
-    durationMin: number;
-  };
-  progress?: number;
-}) {
-  return (
-    <article className="group overflow-hidden rounded-xl border border-border bg-card transition hover:-translate-y-0.5 hover:shadow-md">
-      <div
-        className={`relative flex aspect-video flex-col justify-end bg-gradient-to-br p-4 text-white ${PRODUCT_COVER[course.product]}`}
-      >
-        <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
-          {PRODUCT_LABEL[course.product]}
-        </span>
-        <span className="mt-1 font-display text-lg font-bold tracking-tight">
-          {course.title}
-        </span>
-      </div>
-      <div className="space-y-2 p-4">
-        <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {course.level}
-        </span>
-        {typeof progress === "number" ? (
-          <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        ) : null}
-        <div className="flex items-center gap-3 pt-1 text-xs font-medium text-muted-foreground">
-          {course.lessons > 0 ? <span>{course.lessons} aulas</span> : null}
-          <span>{fmtDur(course.durationMin)}</span>
-        </div>
-      </div>
-    </article>
   );
 }
