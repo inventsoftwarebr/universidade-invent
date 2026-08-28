@@ -15,6 +15,7 @@ import {
   videoAssets,
 } from "@/db/schema";
 import { ptBR } from "@/lib/i18n/text";
+import type { CourseForPublish } from "@/lib/instructor/publish-checks";
 
 export type InstructorCourseRow = {
   id: string;
@@ -202,6 +203,77 @@ export async function getInstructorCourseBySlug(
             passingRequired: l.passingRequired,
             contentRef: ref,
             video: v ?? null,
+          };
+        }),
+    })),
+  };
+}
+
+/**
+ * Estrutura mínima do curso para `checkCourseForPublish`. Query separada
+ * porque a publicação é por `id` e não depende do slug.
+ */
+export async function getCourseForPublishCheck(
+  courseId: string,
+): Promise<CourseForPublish | null> {
+  const [c] = await db
+    .select({ summaryI18n: courses.summaryI18n })
+    .from(courses)
+    .where(eq(courses.id, courseId));
+  if (!c) return null;
+
+  const mods = await db
+    .select()
+    .from(modules)
+    .where(eq(modules.courseId, courseId))
+    .orderBy(asc(modules.order));
+
+  const lessonRows = mods.length
+    ? await db
+        .select()
+        .from(lessons)
+        .where(
+          inArray(
+            lessons.moduleId,
+            mods.map((m) => m.id),
+          ),
+        )
+        .orderBy(asc(lessons.order))
+    : [];
+
+  const videoIds = lessonRows
+    .map((l) => {
+      const ref = (l.contentRef as Record<string, unknown> | null) ?? {};
+      return typeof ref.videoAssetId === "string" ? ref.videoAssetId : null;
+    })
+    .filter((v): v is string => v !== null);
+
+  const videos = videoIds.length
+    ? await db
+        .select({ id: videoAssets.id, status: videoAssets.status })
+        .from(videoAssets)
+        .where(inArray(videoAssets.id, videoIds))
+    : [];
+  const videosById = new Map(videos.map((v) => [v.id, v]));
+
+  return {
+    summary: ptBR(c.summaryI18n),
+    modules: mods.map((m) => ({
+      title: ptBR(m.titleI18n, "(sem título)"),
+      lessons: lessonRows
+        .filter((l) => l.moduleId === m.id)
+        .map((l) => {
+          const ref = (l.contentRef as Record<string, unknown> | null) ?? {};
+          const videoId =
+            typeof ref.videoAssetId === "string" ? ref.videoAssetId : null;
+          return {
+            title: ptBR(l.titleI18n, "(sem título)"),
+            type: l.type,
+            durationSeconds: l.durationSeconds,
+            contentRef: ref,
+            video: videoId
+              ? { status: videosById.get(videoId)?.status ?? "uploading" }
+              : null,
           };
         }),
     })),

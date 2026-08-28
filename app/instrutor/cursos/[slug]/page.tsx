@@ -5,18 +5,23 @@ import {
   getInstructorCourseBySlug,
   listCategories,
 } from "@/lib/instructor/queries";
+import type { EditorLesson, EditorModule } from "@/lib/instructor/queries";
 import {
+  archiveCourse,
   createLesson,
   createModule,
   deleteLesson,
   deleteModule,
-  publishCourse,
-  archiveCourse,
+  moveLessonAction,
+  moveModuleAction,
   renameModule,
   updateCourse,
+  updateLesson,
 } from "@/lib/instructor/actions";
 import { CourseStatusBadge } from "@/components/instructor/CourseStatusBadge";
+import { ConfirmButton } from "@/components/instructor/ConfirmButton";
 import { LessonVideoUploader } from "@/components/instructor/LessonVideoUploader";
+import { PublishCourseButton } from "@/components/instructor/PublishCourseButton";
 
 export async function generateMetadata({
   params,
@@ -74,16 +79,9 @@ export default async function CursoEditorPage({
             /cursos/{course.slug}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           {course.status !== "published" ? (
-            <form action={publishWrapper.bind(null, course.id)}>
-              <button
-                type="submit"
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
-              >
-                Publicar
-              </button>
-            </form>
+            <PublishCourseButton courseId={course.id} />
           ) : (
             <form action={archiveWrapper.bind(null, course.id)}>
               <button
@@ -98,7 +96,6 @@ export default async function CursoEditorPage({
       </header>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
-        {/* Conteúdo (módulos + aulas) */}
         <section className="space-y-6">
           <h2 className="font-display text-xl font-bold tracking-tight">
             Conteúdo do curso
@@ -112,7 +109,13 @@ export default async function CursoEditorPage({
           ) : (
             <ol className="space-y-4">
               {course.modules.map((m, idx) => (
-                <ModuleCard key={m.id} module={m} index={idx + 1} />
+                <ModuleCard
+                  key={m.id}
+                  module={m}
+                  index={idx + 1}
+                  isFirst={idx === 0}
+                  isLast={idx === course.modules.length - 1}
+                />
               ))}
             </ol>
           )}
@@ -120,23 +123,14 @@ export default async function CursoEditorPage({
           <NewModuleForm courseId={course.id} />
         </section>
 
-        {/* Detalhes do curso (form de edição) */}
         <aside className="space-y-6">
-          <CourseDetailsForm
-            course={course}
-            categories={cats}
-          />
+          <CourseDetailsForm course={course} categories={cats} />
         </aside>
       </div>
     </div>
   );
 }
 
-// Wrapper porque server actions tied to bind() recebem args inicialmente.
-async function publishWrapper(courseId: string) {
-  "use server";
-  await publishCourse(courseId);
-}
 async function archiveWrapper(courseId: string) {
   "use server";
   await archiveCourse(courseId);
@@ -145,20 +139,13 @@ async function archiveWrapper(courseId: string) {
 function ModuleCard({
   module: m,
   index,
+  isFirst,
+  isLast,
 }: {
-  module: {
-    id: string;
-    title: string;
-    lessons: {
-      id: string;
-      type: "video" | "text" | "quiz" | "assignment" | "live";
-      title: string;
-      durationSeconds: number | null;
-      video: { id: string; status: string } | null;
-      contentRef: Record<string, unknown>;
-    }[];
-  };
+  module: EditorModule;
   index: number;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   return (
     <li className="overflow-hidden rounded-xl border border-border bg-card">
@@ -171,6 +158,7 @@ function ModuleCard({
           <input
             name="title"
             defaultValue={m.title}
+            aria-label={`Título do módulo ${index}`}
             className="flex-1 rounded-md bg-transparent px-2 py-1 font-display text-base font-bold focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <button
@@ -180,16 +168,25 @@ function ModuleCard({
             Salvar
           </button>
         </form>
-        <form action={deleteModule}>
-          <input type="hidden" name="moduleId" value={m.id} />
-          <button
-            type="submit"
-            aria-label="Remover módulo"
-            className="rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground hover:bg-accent/10 hover:text-accent"
-          >
-            Remover
-          </button>
-        </form>
+
+        <div className="flex items-center gap-1">
+          <MoveButtons
+            action={moveModuleAction}
+            idField="moduleId"
+            id={m.id}
+            label={`módulo ${index}`}
+            isFirst={isFirst}
+            isLast={isLast}
+          />
+          <form action={deleteModule}>
+            <input type="hidden" name="moduleId" value={m.id} />
+            <ConfirmButton
+              label="Remover"
+              confirmLabel="Confirmar"
+              ariaLabel={`Remover módulo ${index} e todas as suas aulas`}
+            />
+          </form>
+        </div>
       </header>
 
       {m.lessons.length === 0 ? (
@@ -199,7 +196,13 @@ function ModuleCard({
       ) : (
         <ul className="divide-y divide-border">
           {m.lessons.map((l, i) => (
-            <LessonRow key={l.id} lesson={l} index={i + 1} />
+            <LessonRow
+              key={l.id}
+              lesson={l}
+              index={i + 1}
+              isFirst={i === 0}
+              isLast={i === m.lessons.length - 1}
+            />
           ))}
         </ul>
       )}
@@ -209,22 +212,74 @@ function ModuleCard({
   );
 }
 
+/**
+ * Reordenação por setas em vez de drag-and-drop: funciona sem JS, é
+ * acessível por teclado e não exige biblioteca. Drag pode vir depois.
+ */
+function MoveButtons({
+  action,
+  idField,
+  id,
+  label,
+  isFirst,
+  isLast,
+}: {
+  action: (formData: FormData) => Promise<void>;
+  idField: "moduleId" | "lessonId";
+  id: string;
+  label: string;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
+  const base =
+    "rounded-md border border-border bg-background px-2 py-1 text-[11px] font-semibold text-muted-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30";
+  return (
+    <div className="flex items-center gap-1">
+      <form action={action}>
+        <input type="hidden" name={idField} value={id} />
+        <input type="hidden" name="direction" value="up" />
+        <button
+          type="submit"
+          disabled={isFirst}
+          aria-label={`Mover ${label} para cima`}
+          className={base}
+        >
+          ↑
+        </button>
+      </form>
+      <form action={action}>
+        <input type="hidden" name={idField} value={id} />
+        <input type="hidden" name="direction" value="down" />
+        <button
+          type="submit"
+          disabled={isLast}
+          aria-label={`Mover ${label} para baixo`}
+          className={base}
+        >
+          ↓
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function LessonRow({
   lesson: l,
   index,
+  isFirst,
+  isLast,
 }: {
-  lesson: {
-    id: string;
-    type: "video" | "text" | "quiz" | "assignment" | "live";
-    title: string;
-    durationSeconds: number | null;
-    video: { id: string; status: string } | null;
-    contentRef: Record<string, unknown>;
-  };
+  lesson: EditorLesson;
   index: number;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   const needsUpload =
     l.type === "video" && (!l.video || l.video.status === "uploading");
+  const durationMinutes = l.durationSeconds
+    ? Math.round(l.durationSeconds / 60)
+    : "";
+
   return (
     <li className="px-5 py-3">
       <div className="flex items-center gap-4">
@@ -237,6 +292,18 @@ function LessonRow({
             <span className="rounded-full bg-muted px-1.5 py-px text-[10px] font-semibold">
               {TYPE_LABEL[l.type]}
             </span>
+            {l.isPreview ? (
+              <span className="rounded-full bg-invent-gold-50 px-1.5 py-px text-[10px] font-semibold text-invent-gold-700">
+                Prévia
+              </span>
+            ) : null}
+            {l.durationSeconds ? (
+              <span className="tabular-nums">
+                · {Math.round(l.durationSeconds / 60)}min
+              </span>
+            ) : (
+              <span>· sem duração</span>
+            )}
             {l.video ? (
               <span
                 className={
@@ -252,17 +319,128 @@ function LessonRow({
             ) : null}
           </div>
         </div>
+
+        <MoveButtons
+          action={moveLessonAction}
+          idField="lessonId"
+          id={l.id}
+          label={`aula ${index}`}
+          isFirst={isFirst}
+          isLast={isLast}
+        />
         <form action={deleteLesson}>
           <input type="hidden" name="lessonId" value={l.id} />
-          <button
-            type="submit"
-            aria-label="Remover aula"
-            className="rounded-md border border-border bg-background px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground hover:bg-accent/10 hover:text-accent"
-          >
-            Remover
-          </button>
+          <ConfirmButton
+            label="Remover"
+            confirmLabel="Confirmar"
+            ariaLabel={`Remover aula ${l.title}`}
+          />
         </form>
       </div>
+
+      <details className="mt-3 rounded-md border border-border bg-background-subtle">
+        <summary className="cursor-pointer px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Editar aula
+        </summary>
+        <form action={updateLesson} className="space-y-3 px-3 pb-3 text-sm">
+          <input type="hidden" name="lessonId" value={l.id} />
+
+          <label className="block">
+            <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Título
+            </span>
+            <input
+              name="title"
+              defaultValue={l.title}
+              required
+              minLength={2}
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
+
+          {l.type === "text" ? (
+            <label className="block">
+              <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Conteúdo (markdown)
+              </span>
+              <textarea
+                name="text"
+                rows={10}
+                maxLength={20000}
+                defaultValue={
+                  typeof l.contentRef.mdx === "string" ? l.contentRef.mdx : ""
+                }
+                placeholder="# Título da aula&#10;&#10;Escreva o conteúdo aqui."
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+          ) : null}
+
+          {l.type === "live" ? (
+            <label className="block">
+              <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Link de acesso
+              </span>
+              <input
+                name="joinUrl"
+                type="url"
+                defaultValue={
+                  typeof l.contentRef.joinUrl === "string"
+                    ? l.contentRef.joinUrl
+                    : ""
+                }
+                placeholder="https://meet.google.com/..."
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+          ) : null}
+
+          <div className="flex flex-wrap items-end gap-4">
+            <label className="block">
+              <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Duração (min)
+              </span>
+              <input
+                name="durationMinutes"
+                type="number"
+                min={0}
+                max={600}
+                defaultValue={durationMinutes}
+                disabled={l.type === "video"}
+                title={
+                  l.type === "video"
+                    ? "A duração do vídeo vem da Bunny automaticamente."
+                    : undefined
+                }
+                className="mt-1 w-28 rounded-md border border-input bg-background px-3 py-2 disabled:opacity-50"
+              />
+            </label>
+
+            <label className="flex items-center gap-2 pb-2 text-xs">
+              <input
+                type="checkbox"
+                name="isPreview"
+                defaultChecked={l.isPreview}
+                className="h-4 w-4 rounded border-input"
+              />
+              Prévia gratuita
+            </label>
+
+          </div>
+
+          {/*
+            `passingRequired` fica de fora até os quizzes existirem: hoje não
+            há nada que aprove o aluno, então o controle seria decorativo.
+          */}
+
+          <button
+            type="submit"
+            className="rounded-md bg-foreground px-4 py-2 text-xs font-semibold text-background hover:bg-foreground/80"
+          >
+            Salvar aula
+          </button>
+        </form>
+      </details>
 
       {needsUpload ? (
         <div className="mt-3 rounded-md border border-dashed border-border bg-background-subtle p-3">
@@ -283,10 +461,12 @@ function NewLessonForm({ moduleId }: { moduleId: string }) {
       <select
         name="type"
         defaultValue="video"
+        aria-label="Tipo da aula"
         className="rounded-md border border-input bg-background px-2 py-1.5 text-xs"
       >
         <option value="video">Vídeo</option>
         <option value="text">Texto</option>
+        <option value="live">Aula ao vivo</option>
       </select>
       <input
         name="title"

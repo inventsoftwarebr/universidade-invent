@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db/client";
 import { courses, lessons, modules, videoAssets } from "@/db/schema";
@@ -11,11 +11,21 @@ import {
   assertCourseOwnership,
   assertLessonOwnership,
   assertModuleOwnership,
+  getCourseForPublishCheck,
   nextLessonOrder,
   nextModuleOrder,
   uniqueCourseSlug,
 } from "@/lib/instructor/queries";
-import { createBunnyVideo, getTusUploadHeaders } from "@/lib/bunny/client";
+import {
+  checkCourseForPublish,
+  type PublishIssue,
+} from "@/lib/instructor/publish-checks";
+import { moveLesson, moveModule } from "@/lib/instructor/ordering";
+import {
+  createBunnyVideo,
+  fetchBunnyVideo,
+  getTusUploadHeaders,
+} from "@/lib/bunny/client";
 
 export type ActionResult<T = void> =
   | ({ ok: true } & (T extends void ? object : { data: T }))
@@ -107,18 +117,63 @@ export async function updateCourse(formData: FormData): Promise<void> {
   revalidatePath(`/instrutor/cursos`);
 }
 
-export async function publishCourse(courseId: string): Promise<void> {
-  const user = await requireRole(["admin", "instrutor"]);
-  await assertCourseOwnership(courseId, user.id, user.role);
-  await db
-    .update(courses)
-    .set({
-      status: "published",
-      publishedAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(eq(courses.id, courseId));
-  revalidatePath("/instrutor");
+/**
+ * Publica o curso — mas só se ele estiver publicável.
+ *
+ * Sem essa checagem dá para jogar no catálogo um curso sem aulas ou com
+ * vídeo ainda em processamento, e o aluno encontra a página quebrada.
+ */
+export async function publishCourse(
+  courseId: string,
+): Promise<ActionResult<{ warnings: PublishIssue[] }>> {
+  try {
+    const user = await requireRole(["admin", "instrutor"]);
+    await assertCourseOwnership(courseId, user.id, user.role);
+
+    const course = await getCourseForPublishCheck(courseId);
+    if (!course) return { ok: false, error: "not_found" };
+
+    const { blockers, warnings } = checkCourseForPublish(course);
+    if (blockers.length > 0) {
+      return {
+        ok: false,
+        error: "not_publishable",
+        fieldErrors: Object.fromEntries(
+          blockers.map((b, i) => [`${b.code}_${i}`, b.message]),
+        ),
+      };
+    }
+
+    await db
+      .update(courses)
+      .set({
+        status: "published",
+        publishedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(courses.id, courseId));
+
+    revalidatePath("/instrutor");
+    revalidatePath("/cursos");
+    return { ok: true, data: { warnings } };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "unknown" };
+  }
+}
+
+/** Só checa, sem publicar — alimenta o aviso prévio no editor. */
+export async function previewPublishChecks(
+  courseId: string,
+): Promise<ActionResult<{ blockers: PublishIssue[]; warnings: PublishIssue[] }>> {
+  try {
+    const user = await requireRole(["admin", "instrutor"]);
+    await assertCourseOwnership(courseId, user.id, user.role);
+    const course = await getCourseForPublishCheck(courseId);
+    if (!course) return { ok: false, error: "not_found" };
+    return { ok: true, data: checkCourseForPublish(course) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "unknown" };
+  }
 }
 
 export async function archiveCourse(courseId: string): Promise<void> {
@@ -179,7 +234,8 @@ export async function deleteModule(formData: FormData): Promise<void> {
 const lessonCreateSchema = z.object({
   moduleId: z.string().uuid(),
   title: z.string().min(2).max(200),
-  type: z.enum(["video", "text"]),
+  // quiz e assignment ficam de fora até existirem as tabelas correspondentes.
+  type: z.enum(["video", "text", "live"]),
   text: z.string().max(20_000).optional(),
 });
 
@@ -202,8 +258,101 @@ export async function createLesson(formData: FormData): Promise<void> {
     contentRef:
       parsed.type === "text"
         ? { kind: "text", mdx: parsed.text ?? "" }
-        : { kind: "video" }, // videoAssetId chega depois via startVideoUpload
+        : parsed.type === "live"
+          ? { kind: "live" } // joinUrl é preenchido na edição da aula
+          : { kind: "video" }, // videoAssetId chega depois via startVideoUpload
   });
+  revalidatePath(`/instrutor/cursos`);
+}
+
+const lessonUpdateSchema = z.object({
+  lessonId: z.string().uuid(),
+  title: z.string().min(2, "Título precisa de ao menos 2 caracteres.").max(200),
+  text: z.string().max(20_000).optional(),
+  joinUrl: z.string().url("Link inválido.").max(500).optional().or(z.literal("")),
+  durationMinutes: z.coerce.number().int().min(0).max(600).optional(),
+  isPreview: z.boolean(),
+});
+
+/**
+ * Edição da aula depois de criada: título, conteúdo, duração e flags.
+ *
+ * Antes disso a aula de texto era inutilizável — nascia com `mdx` vazio e
+ * não havia nenhum caminho para preenchê-la.
+ */
+export async function updateLesson(formData: FormData): Promise<void> {
+  const user = await requireRole(["admin", "instrutor"]);
+
+  const parsed = lessonUpdateSchema.parse({
+    lessonId: formData.get("lessonId"),
+    title: formData.get("title"),
+    text: formData.get("text") ?? undefined,
+    joinUrl: formData.get("joinUrl") ?? undefined,
+    durationMinutes: formData.get("durationMinutes") || undefined,
+    isPreview: formData.get("isPreview") === "on",
+  });
+
+  await assertLessonOwnership(parsed.lessonId, user.id, user.role);
+
+  const [current] = await db
+    .select({ type: lessons.type, contentRef: lessons.contentRef })
+    .from(lessons)
+    .where(eq(lessons.id, parsed.lessonId));
+  if (!current) throw new Error("not_found");
+
+  const prevRef = (current.contentRef as Record<string, unknown> | null) ?? {};
+  const contentRef: Record<string, unknown> = { ...prevRef };
+  if (current.type === "text") {
+    contentRef.kind = "text";
+    contentRef.mdx = parsed.text ?? "";
+  }
+  if (current.type === "live") {
+    contentRef.kind = "live";
+    contentRef.joinUrl = parsed.joinUrl || undefined;
+  }
+
+  await db
+    .update(lessons)
+    .set({
+      titleI18n: { "pt-BR": parsed.title },
+      contentRef,
+      // Duração de vídeo vem da Bunny; para os outros tipos é manual.
+      durationSeconds:
+        parsed.durationMinutes !== undefined && parsed.durationMinutes > 0
+          ? parsed.durationMinutes * 60
+          : undefined,
+      isPreview: parsed.isPreview,
+      updatedAt: new Date(),
+    })
+    .where(eq(lessons.id, parsed.lessonId));
+
+  revalidatePath(`/instrutor/cursos`);
+}
+
+const moveSchema = z.object({
+  id: z.string().uuid(),
+  direction: z.enum(["up", "down"]),
+});
+
+export async function moveModuleAction(formData: FormData): Promise<void> {
+  const user = await requireRole(["admin", "instrutor"]);
+  const parsed = moveSchema.parse({
+    id: formData.get("moduleId"),
+    direction: formData.get("direction"),
+  });
+  await assertModuleOwnership(parsed.id, user.id, user.role);
+  await moveModule(parsed.id, parsed.direction);
+  revalidatePath(`/instrutor/cursos`);
+}
+
+export async function moveLessonAction(formData: FormData): Promise<void> {
+  const user = await requireRole(["admin", "instrutor"]);
+  const parsed = moveSchema.parse({
+    id: formData.get("lessonId"),
+    direction: formData.get("direction"),
+  });
+  await assertLessonOwnership(parsed.id, user.id, user.role);
+  await moveLesson(parsed.id, parsed.direction);
   revalidatePath(`/instrutor/cursos`);
 }
 
@@ -305,6 +454,8 @@ export async function getVideoAssetStatus(
       .select({
         status: videoAssets.status,
         uploadedBy: videoAssets.uploadedBy,
+        providerAssetId: videoAssets.providerAssetId,
+        durationSeconds: videoAssets.durationSeconds,
       })
       .from(videoAssets)
       .where(eq(videoAssets.id, videoAssetId));
@@ -312,11 +463,59 @@ export async function getVideoAssetStatus(
     if (user.role !== "admin" && row.uploadedBy && row.uploadedBy !== user.id) {
       return { ok: false, error: "forbidden" };
     }
+
+    if (row.status === "ready" && row.durationSeconds === null) {
+      await syncVideoMetadata(videoAssetId, row.providerAssetId);
+    }
+
     return { ok: true, data: { status: row.status } };
   } catch (err) {
     return {
       ok: false,
       error: err instanceof Error ? err.message : "unknown",
     };
+  }
+}
+
+/**
+ * Busca duração e thumbnail na Bunny quando o vídeo fica pronto e propaga a
+ * duração para a aula, se ela ainda não tiver uma.
+ *
+ * Roda aqui, no polling do instrutor, e não no webhook: a regra §6 do
+ * CLAUDE.md manda o webhook responder rápido, e isto é uma chamada de rede a
+ * mais. Falha de rede não pode derrubar o polling — o status do vídeo é a
+ * informação importante, a duração é complemento e a próxima chamada tenta
+ * de novo.
+ */
+async function syncVideoMetadata(
+  videoAssetId: string,
+  providerAssetId: string,
+): Promise<void> {
+  try {
+    const meta = await fetchBunnyVideo(providerAssetId);
+    if (meta.lengthSeconds === null && meta.thumbnailUrl === null) return;
+
+    await db
+      .update(videoAssets)
+      .set({
+        durationSeconds: meta.lengthSeconds ?? undefined,
+        thumbnailUrl: meta.thumbnailUrl ?? undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(videoAssets.id, videoAssetId));
+
+    if (meta.lengthSeconds !== null) {
+      await db
+        .update(lessons)
+        .set({ durationSeconds: meta.lengthSeconds, updatedAt: new Date() })
+        .where(
+          and(
+            sql`${lessons.contentRef} ->> 'videoAssetId' = ${videoAssetId}`,
+            isNull(lessons.durationSeconds),
+          ),
+        );
+    }
+  } catch {
+    // Silencioso de propósito: ver comentário acima.
   }
 }

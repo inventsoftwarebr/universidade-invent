@@ -56,6 +56,45 @@ export async function createBunnyVideo(title: string): Promise<{
   return { guid: json.guid, libraryId };
 }
 
+export type BunnyVideoMetadata = {
+  /** Duração em segundos. `null` quando a Bunny ainda não terminou de medir. */
+  lengthSeconds: number | null;
+  thumbnailUrl: string | null;
+};
+
+/**
+ * Metadados do vídeo já processado.
+ *
+ * O webhook da Bunny só manda `VideoGuid` e `Status` — a duração precisa ser
+ * buscada. Sem isso, `lessons.duration_seconds` fica nulo e o catálogo mostra
+ * "—" em toda aula de vídeo.
+ */
+export async function fetchBunnyVideo(
+  videoGuid: string,
+): Promise<BunnyVideoMetadata> {
+  const { libraryId, apiKey, cdnHostname } = env();
+  const res = await fetch(`${BASE_API}/library/${libraryId}/videos/${videoGuid}`, {
+    headers: { AccessKey: apiKey },
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Bunny getVideo falhou (${res.status}): ${await res.text()}`);
+  }
+
+  const json = (await res.json()) as {
+    length?: number;
+    thumbnailFileName?: string;
+  };
+
+  return {
+    lengthSeconds:
+      typeof json.length === "number" && json.length > 0 ? json.length : null,
+    thumbnailUrl: json.thumbnailFileName
+      ? `https://${cdnHostname}/${videoGuid}/${json.thumbnailFileName}`
+      : null,
+  };
+}
+
 /**
  * Headers TUS para o client fazer upload direto.
  *
