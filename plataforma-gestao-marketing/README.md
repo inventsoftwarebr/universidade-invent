@@ -21,6 +21,13 @@
 | [05 — Roadmap e execução](docs/05-roadmap-execucao.md) | Sprints, marcos, squad, riscos, critérios de aceite |
 | [06 — Plano de adoção](docs/06-plano-adocao.md) | Por que as ferramentas anteriores falharam e como não repetir |
 
+## Implementação
+
+A primeira versão da aplicação está em [`inventflow/`](inventflow/) — Next.js +
+Postgres, cobrindo o núcleo de execução (Sprints 1–2 do roadmap) e uma primeira
+versão da página de relatórios. Veja o [README da aplicação](inventflow/README.md)
+para subir localmente e para a lista do que ainda não existe.
+
 ## Resumo em cinco linhas
 
 1. O Marketing não tem uma fonte única de verdade: demanda entra por Teams, WhatsApp e corredor, e o status vive na cabeça das pessoas.

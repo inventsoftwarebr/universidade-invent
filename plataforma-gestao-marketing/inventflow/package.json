@@ -1,0 +1,37 @@
+{
+  "name": "inventflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma de gestão de projetos e iniciativas do Marketing da Invent Software",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx db/migrate.ts",
+    "db:seed": "tsx db/seed.ts",
+    "db:reset": "tsx db/reset.ts && pnpm db:migrate && pnpm db:seed"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "next": "^15.5.25",
+    "openid-client": "^6.8.7",
+    "postgres": "^3.4.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.0",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
